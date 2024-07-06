@@ -36,6 +36,17 @@
     </style>
     
     <script>
+
+ document.addEventListener("DOMContentLoaded", function() {
+            // Add event listener for key press on the whole document
+            document.addEventListener("keypress", function(event) {
+                // Check if the key pressed is Enter (keyCode 13 or which 13)
+                if (event.keyCode === 13 || event.which === 13) {
+                    // Trigger click on the "Generate ID" button
+                    document.getElementById("generateID").click();
+                }
+            });
+        
         // Soundex algorithm implementation
         function soundex(name) {
             let s = [];
