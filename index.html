@@ -171,10 +171,41 @@
             return T;
         }
 
-        function generateID() {
+             function generateID() {
             var participantName = document.getElementById("participantName").value;
             var numberOfIDs = 5000; // Maximum number of IDs
-            var encodingType = Math.floor(Math.random() * 6); // Choose the encoding type from 0 to 5
+            var firstLetter = participantName.charAt(0).toUpperCase();
+            var encodingType;
+
+            // Set encoding type based on the first letter of the name
+            switch (firstLetter) {
+                case 'A':
+                case 'B':
+                    encodingType = 0; // Example: Use hashCode for names starting with A or B
+                    break;
+                case 'C':
+                case 'D':
+                    encodingType = 1; // Example: Use djb2reverse for names starting with C or D
+                    break;
+                case 'E':
+                case 'F':
+                    encodingType = 2; // Example: Use crc32 for names starting with E or F
+                    break;
+                case 'G':
+                case 'H':
+                    encodingType = 3; // Example: Use crc32reverse for names starting with G or H
+                    break;
+                case 'I':
+                case 'J':
+                    encodingType = 4; // Example: Use djb2shift for names starting with I or J
+                    break;
+                case 'K':
+                case 'L':
+                    encodingType = 5; // Example: Use djb2salt for names starting with K or L
+                    break;
+                default:
+                    encodingType = Math.floor(Math.random() * 6); // Default to random if no specific case
+            }
 
             var participantID = coding(participantName, numberOfIDs, encodingType);
 
