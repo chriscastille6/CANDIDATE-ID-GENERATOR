@@ -173,8 +173,8 @@
 
         function generateID() {
             var participantName = document.getElementById("participantName").value;
-            var numberOfIDs = 200; // Maximum number of IDs
-            var encodingType = 2; // Choose the encoding type from 0 to 5
+            var numberOfIDs = 5000; // Maximum number of IDs
+            var encodingType = Math.floor(Math.random() * 6); // Choose the encoding type from 0 to 5
 
             var participantID = coding(participantName, numberOfIDs, encodingType);
 
