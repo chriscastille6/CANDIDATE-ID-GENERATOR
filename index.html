@@ -4,68 +4,67 @@
     <title>ID Generator</title>
 </head>
 <body>
-    <h1>ID Generator</h1>
-    <div>
-        <label for="nameInput">Enter your name:</label>
-        <input type="text" id="nameInput">
-        <button onclick="generateID()">Generate ID</button>
-        <p>Generated ID: <span id="result"></span></p>
-    </div>
-    <div>
-        <label for="lookupInput">Lookup name:</label>
-        <input type="text" id="lookupInput">
-        <button onclick="lookupID()">Lookup ID</button>
-        <p>Lookup result: <span id="lookupResult"></span></p>
-    </div>
+    <form id="idForm">
+        <label for="name">Enter your name:</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Generate ID</button>
+    </form>
+    <div id="result"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        async function generateID() {
-            const name = document.getElementById("nameInput").value.trim();
-            if (!name) {
-                alert("Please enter a name.");
-                return;
-            }
+        document.getElementById('idForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
 
             try {
-                const response = await fetch('http://localhost:3000/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: name })
+                // Fetch stored IDs from GitHub
+                const response = await axios.get('https://api.github.com/repos/your-github-username/your-repo-name/contents/ids.json', {
+                    headers: {
+                        'Authorization': 'token your-personal-access-token',
+                        'Accept': 'application/vnd.github.v3.raw'
+                    }
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById("result").innerText = data.id;
+
+                let storedIDs = response.data;
+
+                // Generate new ID
+                const newID = generateID(name);
+
+                // Check if ID already exists
+                if (storedIDs.includes(newID)) {
+                    document.getElementById('result').textContent = 'ID already exists!';
                 } else {
-                    const error = await response.text();
-                    alert(error);
+                    storedIDs.push(newID);
+
+                    // Update IDs in GitHub
+                    const updateResponse = await axios.put(
+                        'https://api.github.com/repos/your-github-username/your-repo-name/contents/ids.json',
+                        {
+                            message: 'Update IDs',
+                            content: btoa(JSON.stringify(storedIDs)),
+                            sha: response.headers['x-github-media-type'].split(';').pop().trim().split('=').pop()
+                        },
+                        {
+                            headers: {
+                                'Authorization': 'token your-personal-access-token',
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+
+                    document.getElementById('result').textContent = `Generated ID: ${newID}`;
                 }
             } catch (error) {
-                alert('Error generating ID: ' + error.message);
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'An error occurred!';
             }
-        }
+        });
 
-        async function lookupID() {
-            const name = document.getElementById("lookupInput").value.trim();
-            if (!name) {
-                alert("Please enter a name.");
-                return;
-            }
-
-            try {
-                const response = await fetch('http://localhost:3000/lookup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: name })
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById("lookupResult").innerText = data.id;
-                } else {
-                    const error = await response.text();
-                    alert(error);
-                }
-            } catch (error) {
-                alert('Error looking up ID: ' + error.message);
-            }
+        function generateID(name) {
+            // Your existing ID generation logic
+            return name + Math.random().toString(36).substring(2, 8);
         }
     </script>
 </body>
