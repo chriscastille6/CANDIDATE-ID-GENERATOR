@@ -1,629 +1,3092 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate ID</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 50px;
-        }
-        label, input, button {
-            display: block;
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Participant ID Generator</h1>
-    <label for="nameInput">Enter your name:</label>
-    <input type="text" id="nameInput" placeholder="Your name">
-    <button onclick="generateID()">Generate ID</button>
-    <h2>Your ID:</h2>
-    <div id="ID"></div>
 
-    <script>
-        // By Frode Eika Sandnes, Oslo Metropolitan University, Oslo, Norway, April 2021
+<!-- By Frode Eika Sandnes, Oslo Metropolitan University, Oslo, Norway, May 2021 -->
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>CANDIDATE: Anonymous linking of participants on-the-fly</title>
+		<link href="CANDIDATE.css" rel="stylesheet">
 
-function soundex(name)
-	{
-    let s = [];
-    let si = 1;
-    let c;
+		<script src="CANDIDATE.js"></script>
+	</head>
 
-    //              ABCDEFGHIJKLMNOPQRSTUVWXYZ
-    let mappings = "01230120022455012623010202";
+	<body onload="loadSalts()">
 
-    s[0] = name[0].toUpperCase();
+		<div class="container">
+				<h1>CANDIDATE: Anonymous linking of participants on-the-fly</h1>
+		</div> 
 
-    for(let i = 1, l = name.length; i < l; i++)
-		{
-        c = (name[i].toUpperCase()).charCodeAt(0) - 65;
 
-        if(c >= 0 && c <= 25)
-			{
-            if(mappings[c] != '0')
-				{
-                if(mappings[c] != s[si-1])
-					{
-                    s[si] = mappings[c];
-                    si++;
-					}
+		<div class="container">
 
-/*                if(si > 3)
-					{
-                    break;
-					}*/
-				}
-			}
-		}
+			<div class="form">
 
-    if(si <= 3)
-		{
-        while(si <= 3)
-			{
-            s[si] = '0';
-            si++;
-			}
-		}
+						<form name="encodeform">
+							<h2>Lookup / add participant ID</h2>
+							<ul>
+								<li>
+									<label for="nameid"><span>Participant</span></label>
+									<input type="text" id="nameid" name="name" size="20" /> 
+								</li>
+								<li>
+								<label for="listid" id="L0"><span>ID-list (paste/copy JSON snipplet here)</span></label>	
+								<textarea id="listid" name="namelist" rows="5" cols="20"  onfocusout="lockManualInput()"></textarea>
+								</li>
+								<li>
+									<label for="Nid" id="L1"><span>Max participants</span></label>	
+									<input type="text" id="Nid" name="N" size="3" onfocusout="lockAutoInput()" /> 					
+								</li>
+								<li>
+									<label style="visibility: hidden" for="ratioid" id="L2"><span>Coding ratio</span></label>				
+									<select style="visibility: hidden" name="ratio" id="ratioid" onfocusout="lockAutoInput()" >
+									<option value="1">1</option>
+									<option value="2">2</option>
+									<option value="3">3</option>					  
+									<option value="4">4</option>					  
+									<option value="5">5</option>
+									<option value="6">7</option>					  
+									<option value="7">7</option>
+									<option value="8">8</option>					  
+									<option value="9">9</option>
+									<option selected="selected" value="10">10</option>
+									<option value="20">20</option>
+									<option value="50">50</option>
+									<option value="100">100</option>					  
+									</select>
+								</li>
+								<li>
+									<label for="phoneticid" id="L3"><span>Phonetic coding</span></label>	
+									<input type="checkbox" id="phoneticid" name="phonetic" value="phonetic" onfocusout="lockAutoInput()" checked/> 					
+								</li>	
+								<p/>
+								<li>
+									<label for="passwordid"><span>Password (optional) </span></label>	
+									<input type="password" id="passwordid" name="password" size="20"  /> 					
+								</li>
+									<p id="participantid"></p>				
+									<p>
+										<button type="submit" id="lookupID" onClick="return lookup()" disabled>Lookup</button> 
+									<button type="submit" onClick="return add()">Add</button> 
+									</p>
+							</ul>
+						</form>
+						
+						<form name="analyseform" onsubmit="return analyse()">
+						
+						<p id="resultid"></p>		
 
-    return s.join("");
-	}
-
-String.prototype.hashCode = function()
-	{
-    var hash = 0;
-    for (var i = 0; i < this.length; i++) 
-		{
-        var character = this.charCodeAt(i);
-        hash = ((hash<<5)-hash)+character;
-        hash = hash & hash; // Convert to 32bit integer
-		}
-    return hash;
-	}	
-
-// This implementation is taken from 	https://stackoverflow.com/questions/8353134/javascript-crc32-function-and-php-crc32-not-matching-for-utf8/8419366#8419366 
-function Utf8Encode(string) 
-	{
-    string = string.replace(/\r\n/g,"\n");
-    var utftext = "";
-
-    for (var n = 0; n < string.length; n++) {
-        var c = string.charCodeAt(n);
-        if (c < 128) {
-            utftext += String.fromCharCode(c);
-        } else if((c > 127) && (c < 2048)) {
-            utftext += String.fromCharCode((c >> 6) | 192);
-            utftext += String.fromCharCode((c & 63) | 128);
-        } else {
-            utftext += String.fromCharCode((c >> 12) | 224);
-            utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-            utftext += String.fromCharCode((c & 63) | 128);
-        }
-    }
-    return utftext;
-	}
-function crc32(str) 
-	{
-    str = Utf8Encode(str);  
-    var table = "00000000 77073096 EE0E612C 990951BA 076DC419 706AF48F E963A535 9E6495A3 0EDB8832 79DCB8A4 E0D5E91E 97D2D988 09B64C2B 7EB17CBD E7B82D07 90BF1D91 1DB71064 6AB020F2 F3B97148 84BE41DE 1ADAD47D 6DDDE4EB F4D4B551 83D385C7 136C9856 646BA8C0 FD62F97A 8A65C9EC 14015C4F 63066CD9 FA0F3D63 8D080DF5 3B6E20C8 4C69105E D56041E4 A2677172 3C03E4D1 4B04D447 D20D85FD A50AB56B 35B5A8FA 42B2986C DBBBC9D6 ACBCF940 32D86CE3 45DF5C75 DCD60DCF ABD13D59 26D930AC 51DE003A C8D75180 BFD06116 21B4F4B5 56B3C423 CFBA9599 B8BDA50F 2802B89E 5F058808 C60CD9B2 B10BE924 2F6F7C87 58684C11 C1611DAB B6662D3D 76DC4190 01DB7106 98D220BC EFD5102A 71B18589 06B6B51F 9FBFE4A5 E8B8D433 7807C9A2 0F00F934 9609A88E E10E9818 7F6A0DBB 086D3D2D 91646C97 E6635C01 6B6B51F4 1C6C6162 856530D8 F262004E 6C0695ED 1B01A57B 8208F4C1 F50FC457 65B0D9C6 12B7E950 8BBEB8EA FCB9887C 62DD1DDF 15DA2D49 8CD37CF3 FBD44C65 4DB26158 3AB551CE A3BC0074 D4BB30E2 4ADFA541 3DD895D7 A4D1C46D D3D6F4FB 4369E96A 346ED9FC AD678846 DA60B8D0 44042D73 33031DE5 AA0A4C5F DD0D7CC9 5005713C 270241AA BE0B1010 C90C2086 5768B525 206F85B3 B966D409 CE61E49F 5EDEF90E 29D9C998 B0D09822 C7D7A8B4 59B33D17 2EB40D81 B7BD5C3B C0BA6CAD EDB88320 9ABFB3B6 03B6E20C 74B1D29A EAD54739 9DD277AF 04DB2615 73DC1683 E3630B12 94643B84 0D6D6A3E 7A6A5AA8 E40ECF0B 9309FF9D 0A00AE27 7D079EB1 F00F9344 8708A3D2 1E01F268 6906C2FE F762575D 806567CB 196C3671 6E6B06E7 FED41B76 89D32BE0 10DA7A5A 67DD4ACC F9B9DF6F 8EBEEFF9 17B7BE43 60B08ED5 D6D6A3E8 A1D1937E 38D8C2C4 4FDFF252 D1BB67F1 A6BC5767 3FB506DD 48B2364B D80D2BDA AF0A1B4C 36034AF6 41047A60 DF60EFC3 A867DF55 316E8EEF 4669BE79 CB61B38C BC66831A 256FD2A0 5268E236 CC0C7795 BB0B4703 220216B9 5505262F C5BA3BBE B2BD0B28 2BB45A92 5CB36A04 C2D7FFA7 B5D0CF31 2CD99E8B 5BDEAE1D 9B64C2B0 EC63F226 756AA39C 026D930A 9C0906A9 EB0E363F 72076785 05005713 95BF4A82 E2B87A14 7BB12BAE 0CB61B38 92D28E9B E5D5BE0D 7CDCEFB7 0BDBDF21 86D3D2D4 F1D4E242 68DDB3F8 1FDA836E 81BE16CD F6B9265B 6FB077E1 18B74777 88085AE6 FF0F6A70 66063BCA 11010B5C 8F659EFF F862AE69 616BFFD3 166CCF45 A00AE278 D70DD2EE 4E048354 3903B3C2 A7672661 D06016F7 4969474D 3E6E77DB AED16A4A D9D65ADC 40DF0B66 37D83BF0 A9BCAE53 DEBB9EC5 47B2CF7F 30B5FFE9 BDBDF21C CABAC28A 53B39330 24B4A3A6 BAD03605 CDD70693 54DE5729 23D967BF B3667A2E C4614AB8 5D681B02 2A6F2B94 B40BBE37 C30C8EA1 5A05DF1B 2D02EF8D";
-    var crc = 0;
-    var x = 0;
-    var y = 0;
-
-    crc = crc ^ (-1);
-    for( var i = 0, iTop = str.length; i < iTop; i++ ) 
-		{
-        y = ( crc ^ str.charCodeAt( i ) ) & 0xFF;
-        x = "0x" + table.substr( y * 9, 8 );
-        crc = ( crc >>> 8 ) ^ x;
-		}
-
-    return (crc ^ (-1)) >>> 0;
-	}	
-// Reverse the string before djb2 hash.	
-function djb2reverse(str)
-	{
-	s = str.split("").reverse().join("");
-	return s.hashCode();
-	}	
-function crc32reverse(str)
-	{
-	s = str.split("").reverse().join("");
-	return crc32(s);
-	}		
-// Shift the string n places before djb2 hash.	
-function djb2shift(str,i)
-	{
-	head = str.substring(0,i);
-	tail = str.substring(i);
-	return (tail+head).hashCode();
-	}
-// add salt to string before djb hash
-var salt = [];	// global variable
-function loadSalts()	// called upon page load
-	{
-	var saltArea = document.getElementById("slistid").value;
-	salt = saltArea.split("\n");
-//tester();			// uncomment to run tester() function
-	return false;	
-	}
-function djb2salt(str,i)
-	{
-	return (str+salt[i]).hashCode();
-	}
-function coding(name,L,type)
-	{
-	ID = -1;
-
-	switch (type)
-		{
-		case 0: // default
-				ID = Math.abs((name.hashCode())%L);
-				break;
-		case 1: // reverse
-				ID = Math.abs(djb2reverse(name)%L);            
-				break;
-		case 2: // CRC
-				ID = Math.abs(crc32(name)%L);                    
-				break;
-		case 3: // CRC reverse
-				ID = Math.abs(crc32reverse(name)%L);                    
-				break;
-		// shift in ten steps
-		case 4: case  5: case  6: case  7: case  8: 
-				ID = Math.abs(djb2shift(name, type - 3)%L);                    
-				break;
-		default: // salt based on the value as index into salt array
-				idx = type%salt.length;
-				ID = Math.abs(djb2salt(name, idx)%L);                                  
-				break;                    
-		}
-    return ID;
-    }	
-
-var validationOffset = 10; // global and arbitrary - and long away from the others	
-// Search for a hash function type that results in unused IDs	
-function findFreeCodingType(encodings, name, L)
-	{
-	// first find number of possible coding types
-	var noCodingTypes = 14 + salt.length;
-	for (var type=0;type<noCodingTypes;type++)
-		{
-		var ID = coding(name,L,type);
-		if (!encodings.has(ID))
-			{
-			if (type == 0) // the default encoding
-				{
-				return type;
-				}
-			// check if validation code is free also
-			ID = coding(name,L,0);  // the default code as we have collision
-			var validation = coding(name,L,type+validationOffset);
-//			if (validations.get(ID) == null || !validations.get(ID).has(validation))
-			if (!encodings.has(getValidationKey(ID)) || !encodings.get(getValidationKey(ID)).includes(validation))
-				{				
-				return type;
-				}	
-			}
-		}
-	return -1; // could not find a match
-	}
- function findEncoding(encodings, name, L)
-	{
-	// get the default (base) encoding
-	var ID = coding(name,L,0);
-	// lookup the coding type
-	var types = encodings.get(ID);
-
-	var validation = encodings.get(getValidationKey(ID));
-	// find the one that is validtypes
-	if (types == null)
-		{
-		return ID;
-		}
-	for (var i = 1;i < types.length;i++)
-		{
-		var type = types[i];
-		var code = validation[i];
-		var ID2 = coding(name,L,type);
-		var valid = coding(name,L,type+validationOffset);
-		// check that valid code is mathcing AND that it represent a valid value             
-		if (valid == code && encodings.get(getValidationKey(ID2))!=null)
-			{
-			return ID2;
-			} 
-		}
-	return ID;
-	}   
-function getValidationKey(id)
-	{
-	return ("valid-code-"+id);
-	}	
-function addPerson(encodings, name, L)
-	{
-	// simple coding
-	var type = findFreeCodingType(encodings,name,L);
-	var ID = coding(name,L,type); 
-	var list  = [];
-	list.push(0); // default encoindg
-	encodings.set(ID, list);
-	// add validation as well
-	var list2 = [];
-	list2.push(-1); // default, keep info to a mimium
-	encodings.set(getValidationKey(ID), list2);
-	                      
-	if (type != 0) // if it is not default
-		{
-		// need to store what the coding shouuld be
-		ID = coding(name,L,0); 
-		encodings.get(ID).push(type); // add element
-		if (!encodings.has(getValidationKey(ID)))
-			{
-			var list3  = [];
-			encodings.set(getValidationKey(ID), list3);			
-			}
-		encodings.get(getValidationKey(ID)).push(coding(name,L,type+validationOffset)); // add element
-		}   
-	}
-
-function encodePhonetic(name)
-	{
-	name = name.replace(",","");
-	var parts = name.split(" ");
-	parts.sort();
-	var code = "";
-	for (var x of parts)
-		{
-		code += soundex(x);
-		}
-	return code;	
-	}	
+							<p>
+								<textarea id="slistid" name="saltlist" rows="5" cols="15" hidden>
+a
+abandon
+ability
+able
+abortion
+about
+above
+abroad
+absence
+absolute
+absolutely
+absorb
+abuse
+academic
+accept
+access
+accident
+accompany
+accomplish
+according
+account
+accurate
+accuse
+achieve
+achievement
+acid
+acknowledge
+acquire
+across
+act
+action
+active
+activist
+activity
+actor
+actress
+actual
+actually
+ad
+adapt
+add
+addition
+additional
+address
+adequate
+adjust
+adjustment
+administration
+administrator
+admire
+admission
+admit
+adolescent
+adopt
+adult
+advance
+advanced
+advantage
+adventure
+advertising
+advice
+advise
+adviser
+advocate
+affair
+affect
+afford
+afraid
+African
+African-American
+after
+afternoon
+again
+against
+age
+agency
+agenda
+agent
+aggressive
+ago
+agree
+agreement
+agricultural
+ah
+ahead
+aid
+aide
+AIDS
+aim
+air
+aircraft
+airline
+airport
+album
+alcohol
+alive
+all
+alliance
+allow
+ally
+almost
+alone
+along
+already
+also
+alter
+alternative
+although
+always
+AM
+amazing
+American
+among
+amount
+analysis
+analyst
+analyze
+ancient
+and
+anger
+angle
+angry
+animal
+anniversary
+announce
+annual
+another
+answer
+anticipate
+anxiety
+any
+anybody
+anymore
+anyone
+anything
+anyway
+anywhere
+apart
+apartment
+apparent
+apparently
+appeal
+appear
+appearance
+apple
+application
+apply
+appoint
+appointment
+appreciate
+approach
+appropriate
+approval
+approve
+approximately
+Arab
+architect
+area
+argue
+argument
+arise
+arm
+armed
+army
+around
+arrange
+arrangement
+arrest
+arrival
+arrive
+art
+article
+artist
+artistic
+as
+Asian
+aside
+ask
+asleep
+aspect
+assault
+assert
+assess
+assessment
+asset
+assign
+assignment
+assist
+assistance
+assistant
+associate
+association
+assume
+assumption
+assure
+at
+athlete
+athletic
+atmosphere
+attach
+attack
+attempt
+attend
+attention
+attitude
+attorney
+attract
+attractive
+attribute
+audience
+author
+authority
+auto
+available
+average
+avoid
+award
+aware
+awareness
+away
+awful
+baby
+back
+background
+bad
+badly
+bag
+bake
+balance
+ball
+ban
+band
+bank
+bar
+barely
+barrel
+barrier
+base
+baseball
+basic
+basically
+basis
+basket
+basketball
+bathroom
+battery
+battle
+be
+beach
+bean
+bear
+beat
+beautiful
+beauty
+because
+become
+bed
+bedroom
+beer
+before
+begin
+beginning
+behavior
+behind
+being
+belief
+believe
+bell
+belong
+below
+belt
+bench
+bend
+beneath
+benefit
+beside
+besides
+best
+bet
+better
+between
+beyond
+Bible
+big
+bike
+bill
+billion
+bind
+biological
+bird
+birth
+birthday
+bit
+bite
+black
+blade
+blame
+blanket
+blind
+block
+blood
+blow
+blue
+board
+boat
+body
+bomb
+bombing
+bond
+bone
+book
+boom
+boot
+border
+born
+borrow
+boss
+both
+bother
+bottle
+bottom
+boundary
+bowl
+box
+boy
+boyfriend
+brain
+branch
+brand
+bread
+break
+breakfast
+breast
+breath
+breathe
+brick
+bridge
+brief
+briefly
+bright
+brilliant
+bring
+British
+broad
+broken
+brother
+brown
+brush
+buck
+budget
+build
+building
+bullet
+bunch
+burden
+burn
+bury
+bus
+business
+busy
+but
+butter
+button
+buy
+buyer
+by
+cabin
+cabinet
+cable
+cake
+calculate
+call
+camera
+camp
+campaign
+campus
+can
+Canadian
+cancer
+candidate
+cap
+capability
+capable
+capacity
+capital
+captain
+capture
+car
+carbon
+card
+care
+career
+careful
+carefully
+carrier
+carry
+case
+cash
+cast
+cat
+catch
+category
+Catholic
+cause
+ceiling
+celebrate
+celebration
+celebrity
+cell
+center
+central
+century
+CEO
+ceremony
+certain
+certainly
+chain
+chair
+chairman
+challenge
+chamber
+champion
+championship
+chance
+change
+changing
+channel
+chapter
+character
+characteristic
+characterize
+charge
+charity
+chart
+chase
+cheap
+check
+cheek
+cheese
+chef
+chemical
+chest
+chicken
+chief
+child
+childhood
+Chinese
+chip
+chocolate
+choice
+cholesterol
+choose
+Christian
+Christmas
+church
+cigarette
+circle
+circumstance
+cite
+citizen
+city
+civil
+civilian
+claim
+class
+classic
+classroom
+clean
+clear
+clearly
+client
+climate
+climb
+clinic
+clinical
+clock
+close
+closely
+closer
+clothes
+clothing
+cloud
+club
+clue
+cluster
+coach
+coal
+coalition
+coast
+coat
+code
+coffee
+cognitive
+cold
+collapse
+colleague
+collect
+collection
+collective
+college
+colonial
+color
+column
+combination
+combine
+come
+comedy
+comfort
+comfortable
+command
+commander
+comment
+commercial
+commission
+commit
+commitment
+committee
+common
+communicate
+communication
+community
+company
+compare
+comparison
+compete
+competition
+competitive
+competitor
+complain
+complaint
+complete
+completely
+complex
+complicated
+component
+compose
+composition
+comprehensive
+computer
+concentrate
+concentration
+concept
+concern
+concerned
+concert
+conclude
+conclusion
+concrete
+condition
+conduct
+conference
+confidence
+confident
+confirm
+conflict
+confront
+confusion
+Congress
+congressional
+connect
+connection
+consciousness
+consensus
+consequence
+conservative
+consider
+considerable
+consideration
+consist
+consistent
+constant
+constantly
+constitute
+constitutional
+construct
+construction
+consultant
+consume
+consumer
+consumption
+contact
+contain
+container
+contemporary
+content
+contest
+context
+continue
+continued
+contract
+contrast
+contribute
+contribution
+control
+controversial
+controversy
+convention
+conventional
+conversation
+convert
+conviction
+convince
+cook
+cookie
+cooking
+cool
+cooperation
+cop
+cope
+copy
+core
+corn
+corner
+corporate
+corporation
+correct
+correspondent
+cost
+cotton
+couch
+could
+council
+counselor
+count
+counter
+country
+county
+couple
+courage
+course
+court
+cousin
+cover
+coverage
+cow
+crack
+craft
+crash
+crazy
+cream
+create
+creation
+creative
+creature
+credit
+crew
+crime
+criminal
+crisis
+criteria
+critic
+critical
+criticism
+criticize
+crop
+cross
+crowd
+crucial
+cry
+cultural
+culture
+cup
+curious
+current
+currently
+curriculum
+custom
+customer
+cut
+cycle
+dad
+daily
+damage
+dance
+danger
+dangerous
+dare
+dark
+darkness
+data
+date
+daughter
+day
+dead
+deal
+dealer
+dear
+death
+debate
+debt
+decade
+decide
+decision
+deck
+declare
+decline
+decrease
+deep
+deeply
+deer
+defeat
+defend
+defendant
+defense
+defensive
+deficit
+define
+definitely
+definition
+degree
+delay
+deliver
+delivery
+demand
+democracy
+Democrat
+democratic
+demonstrate
+demonstration
+deny
+department
+depend
+dependent
+depending
+depict
+depression
+depth
+deputy
+derive
+describe
+description
+desert
+deserve
+design
+designer
+desire
+desk
+desperate
+despite
+destroy
+destruction
+detail
+detailed
+detect
+determine
+develop
+developing
+development
+device
+devote
+dialogue
+die
+diet
+differ
+difference
+different
+differently
+difficult
+difficulty
+dig
+digital
+dimension
+dining
+dinner
+direct
+direction
+directly
+director
+dirt
+dirty
+disability
+disagree
+disappear
+disaster
+discipline
+discourse
+discover
+discovery
+discrimination
+discuss
+discussion
+disease
+dish
+dismiss
+disorder
+display
+dispute
+distance
+distant
+distinct
+distinction
+distinguish
+distribute
+distribution
+district
+diverse
+diversity
+divide
+division
+divorce
+DNA
+do
+doctor
+document
+dog
+domestic
+dominant
+dominate
+door
+double
+doubt
+down
+downtown
+dozen
+draft
+drag
+drama
+dramatic
+dramatically
+draw
+drawing
+dream
+dress
+drink
+drive
+driver
+drop
+drug
+dry
+due
+during
+dust
+duty
+each
+eager
+ear
+early
+earn
+earnings
+earth
+ease
+easily
+east
+eastern
+easy
+eat
+economic
+economics
+economist
+economy
+edge
+edition
+editor
+educate
+education
+educational
+educator
+effect
+effective
+effectively
+efficiency
+efficient
+effort
+egg
+eight
+either
+elderly
+elect
+election
+electric
+electricity
+electronic
+element
+elementary
+eliminate
+elite
+else
+elsewhere
+e-mail
+embrace
+emerge
+emergency
+emission
+emotion
+emotional
+emphasis
+emphasize
+employ
+employee
+employer
+employment
+empty
+enable
+encounter
+encourage
+end
+enemy
+energy
+enforcement
+engage
+engine
+engineer
+engineering
+English
+enhance
+enjoy
+enormous
+enough
+ensure
+enter
+enterprise
+entertainment
+entire
+entirely
+entrance
+entry
+environment
+environmental
+episode
+equal
+equally
+equipment
+era
+error
+escape
+especially
+essay
+essential
+essentially
+establish
+establishment
+estate
+estimate
+etc
+ethics
+ethnic
+European
+evaluate
+evaluation
+even
+evening
+event
+eventually
+ever
+every
+everybody
+everyday
+everyone
+everything
+everywhere
+evidence
+evolution
+evolve
+exact
+exactly
+examination
+examine
+example
+exceed
+excellent
+except
+exception
+exchange
+exciting
+executive
+exercise
+exhibit
+exhibition
+exist
+existence
+existing
+expand
+expansion
+expect
+expectation
+expense
+expensive
+experience
+experiment
+expert
+explain
+explanation
+explode
+explore
+explosion
+expose
+exposure
+express
+expression
+extend
+extension
+extensive
+extent
+external
+extra
+extraordinary
+extreme
+extremely
+eye
+fabric
+face
+facility
+fact
+factor
+factory
+faculty
+fade
+fail
+failure
+fair
+fairly
+faith
+fall
+false
+familiar
+family
+famous
+fan
+fantasy
+far
+farm
+farmer
+fashion
+fast
+fat
+fate
+father
+fault
+favor
+favorite
+fear
+feature
+federal
+fee
+feed
+feel
+feeling
+fellow
+female
+fence
+few
+fewer
+fiber
+fiction
+field
+fifteen
+fifth
+fifty
+fight
+fighter
+fighting
+figure
+file
+fill
+film
+final
+finally
+finance
+financial
+find
+finding
+fine
+finger
+finish
+fire
+firm
+first
+fish
+fishing
+fit
+fitness
+five
+fix
+flag
+flame
+flat
+flavor
+flee
+flesh
+flight
+float
+floor
+flow
+flower
+fly
+focus
+folk
+follow
+following
+food
+foot
+football
+for
+force
+foreign
+forest
+forever
+forget
+form
+formal
+formation
+former
+formula
+forth
+fortune
+forward
+found
+foundation
+founder
+four
+fourth
+frame
+framework
+free
+freedom
+freeze
+French
+frequency
+frequent
+frequently
+fresh
+friend
+friendly
+friendship
+from
+front
+fruit
+frustration
+fuel
+full
+fully
+fun
+function
+fund
+fundamental
+funding
+funeral
+funny
+furniture
+furthermore
+future
+gain
+galaxy
+gallery
+game
+gang
+gap
+garage
+garden
+garlic
+gas
+gate
+gather
+gay
+gaze
+gear
+gender
+gene
+general
+generally
+generate
+generation
+genetic
+gentleman
+gently
+German
+gesture
+get
+ghost
+giant
+gift
+gifted
+girl
+girlfriend
+give
+given
+glad
+glance
+glass
+global
+glove
+go
+goal
+God
+gold
+golden
+golf
+good
+government
+governor
+grab
+grade
+gradually
+graduate
+grain
+grand
+grandfather
+grandmother
+grant
+grass
+grave
+gray
+great
+greatest
+green
+grocery
+ground
+group
+grow
+growing
+growth
+guarantee
+guard
+guess
+guest
+guide
+guideline
+guilty
+gun
+guy
+habit
+habitat
+hair
+half
+hall
+hand
+handful
+handle
+hang
+happen
+happy
+hard
+hardly
+hat
+hate
+have
+he
+head
+headline
+headquarters
+health
+healthy
+hear
+hearing
+heart
+heat
+heaven
+heavily
+heavy
+heel
+height
+helicopter
+hell
+hello
+help
+helpful
+her
+here
+heritage
+hero
+herself
+hey
+hi
+hide
+high
+highlight
+highly
+highway
+hill
+him
+himself
+hip
+hire
+his
+historian
+historic
+historical
+history
+hit
+hold
+hole
+holiday
+holy
+home
+homeless
+honest
+honey
+honor
+hope
+horizon
+horror
+horse
+hospital
+host
+hot
+hotel
+hour
+house
+household
+housing
+how
+however
+huge
+human
+humor
+hundred
+hungry
+hunter
+hunting
+hurt
+husband
+hypothesis
+I
+ice
+idea
+ideal
+identification
+identify
+identity
+ie
+if
+ignore
+ill
+illegal
+illness
+illustrate
+image
+imagination
+imagine
+immediate
+immediately
+immigrant
+immigration
+impact
+implement
+implication
+imply
+importance
+important
+impose
+impossible
+impress
+impression
+impressive
+improve
+improvement
+in
+incentive
+incident
+include
+including
+income
+incorporate
+increase
+increased
+increasing
+increasingly
+incredible
+indeed
+independence
+independent
+index
+Indian
+indicate
+indication
+individual
+industrial
+industry
+infant
+infection
+inflation
+influence
+inform
+information
+ingredient
+initial
+initially
+initiative
+injury
+inner
+innocent
+inquiry
+inside
+insight
+insist
+inspire
+install
+instance
+instead
+institution
+institutional
+instruction
+instructor
+instrument
+insurance
+intellectual
+intelligence
+intend
+intense
+intensity
+intention
+interaction
+interest
+interested
+interesting
+internal
+international
+Internet
+interpret
+interpretation
+intervention
+interview
+into
+introduce
+introduction
+invasion
+invest
+investigate
+investigation
+investigator
+investment
+investor
+invite
+involve
+involved
+involvement
+Iraqi
+Irish
+iron
+Islamic
+island
+Israeli
+issue
+it
+Italian
+item
+its
+itself
+jacket
+jail
+Japanese
+jet
+Jew
+Jewish
+job
+join
+joint
+joke
+journal
+journalist
+journey
+joy
+judge
+judgment
+juice
+jump
+junior
+jury
+just
+justice
+justify
+keep
+key
+kick
+kid
+kill
+killer
+killing
+kind
+king
+kiss
+kitchen
+knee
+knife
+knock
+know
+knowledge
+lab
+label
+labor
+laboratory
+lack
+lady
+lake
+land
+landscape
+language
+lap
+large
+largely
+last
+late
+later
+Latin
+latter
+laugh
+launch
+law
+lawn
+lawsuit
+lawyer
+lay
+layer
+lead
+leader
+leadership
+leading
+leaf
+league
+lean
+learn
+learning
+least
+leather
+leave
+left
+leg
+legacy
+legal
+legend
+legislation
+legitimate
+lemon
+length
+less
+lesson
+let
+letter
+level
+liberal
+library
+license
+lie
+life
+lifestyle
+lifetime
+lift
+light
+like
+likely
+limit
+limitation
+limited
+line
+link
+lip
+list
+listen
+literally
+literary
+literature
+little
+live
+living
+load
+loan
+local
+locate
+location
+lock
+long
+long-term
+look
+loose
+lose
+loss
+lost
+lot
+lots
+loud
+love
+lovely
+lover
+low
+lower
+luck
+lucky
+lunch
+lung
+machine
+mad
+magazine
+mail
+main
+mainly
+maintain
+maintenance
+major
+majority
+make
+maker
+makeup
+male
+mall
+man
+manage
+management
+manager
+manner
+manufacturer
+manufacturing
+many
+map
+margin
+mark
+market
+marketing
+marriage
+married
+marry
+mask
+mass
+massive
+master
+match
+material
+math
+matter
+may
+maybe
+mayor
+me
+meal
+mean
+meaning
+meanwhile
+measure
+measurement
+meat
+mechanism
+media
+medical
+medication
+medicine
+medium
+meet
+meeting
+member
+membership
+memory
+mental
+mention
+menu
+mere
+merely
+mess
+message
+metal
+meter
+method
+Mexican
+middle
+might
+military
+milk
+million
+mind
+mine
+minister
+minor
+minority
+minute
+miracle
+mirror
+miss
+missile
+mission
+mistake
+mix
+mixture
+mm-hmm
+mode
+model
+moderate
+modern
+modest
+mom
+moment
+money
+monitor
+month
+mood
+moon
+moral
+more
+moreover
+morning
+mortgage
+most
+mostly
+mother
+motion
+motivation
+motor
+mount
+mountain
+mouse
+mouth
+move
+movement
+movie
+Mr
+Mrs
+Ms
+much
+multiple
+murder
+muscle
+museum
+music
+musical
+musician
+Muslim
+must
+mutual
+my
+myself
+mystery
+myth
+naked
+name
+narrative
+narrow
+nation
+national
+native
+natural
+naturally
+nature
+near
+nearby
+nearly
+necessarily
+necessary
+neck
+need
+negative
+negotiate
+negotiation
+neighbor
+neighborhood
+neither
+nerve
+nervous
+net
+network
+never
+nevertheless
+new
+newly
+news
+newspaper
+next
+nice
+night
+nine
+no
+nobody
+nod
+noise
+nomination
+none
+nonetheless
+nor
+normal
+normally
+north
+northern
+nose
+not
+note
+nothing
+notice
+notion
+novel
+now
+nowhere
+n't
+nuclear
+number
+numerous
+nurse
+nut
+object
+objective
+obligation
+observation
+observe
+observer
+obtain
+obvious
+obviously
+occasion
+occasionally
+occupation
+occupy
+occur
+ocean
+odd
+odds
+of
+off
+offense
+offensive
+offer
+office
+officer
+official
+often
+oh
+oil
+ok
+okay
+old
+Olympic
+on
+once
+one
+ongoing
+onion
+online
+only
+onto
+open
+opening
+operate
+operating
+operation
+operator
+opinion
+opponent
+opportunity
+oppose
+opposite
+opposition
+option
+or
+orange
+order
+ordinary
+organic
+organization
+organize
+orientation
+origin
+original
+originally
+other
+others
+otherwise
+ought
+our
+ourselves
+out
+outcome
+outside
+oven
+over
+overall
+overcome
+overlook
+owe
+own
+owner
+pace
+pack
+package
+page
+pain
+painful
+paint
+painter
+painting
+pair
+pale
+Palestinian
+palm
+pan
+panel
+pant
+paper
+parent
+park
+parking
+part
+participant
+participate
+participation
+particular
+particularly
+partly
+partner
+partnership
+party
+pass
+passage
+passenger
+passion
+past
+patch
+path
+patient
+pattern
+pause
+pay
+payment
+PC
+peace
+peak
+peer
+penalty
+people
+pepper
+per
+perceive
+percentage
+perception
+perfect
+perfectly
+perform
+performance
+perhaps
+period
+permanent
+permission
+permit
+person
+personal
+personality
+personally
+personnel
+perspective
+persuade
+pet
+phase
+phenomenon
+philosophy
+phone
+photo
+photograph
+photographer
+phrase
+physical
+physically
+physician
+piano
+pick
+picture
+pie
+piece
+pile
+pilot
+pine
+pink
+pipe
+pitch
+place
+plan
+plane
+planet
+planning
+plant
+plastic
+plate
+platform
+play
+player
+please
+pleasure
+plenty
+plot
+plus
+PM
+pocket
+poem
+poet
+poetry
+point
+pole
+police
+policy
+political
+politically
+politician
+politics
+poll
+pollution
+pool
+poor
+pop
+popular
+population
+porch
+port
+portion
+portrait
+portray
+pose
+position
+positive
+possess
+possibility
+possible
+possibly
+post
+pot
+potato
+potential
+potentially
+pound
+pour
+poverty
+powder
+power
+powerful
+practical
+practice
+pray
+prayer
+precisely
+predict
+prefer
+preference
+pregnancy
+pregnant
+preparation
+prepare
+prescription
+presence
+present
+presentation
+preserve
+president
+presidential
+press
+pressure
+pretend
+pretty
+prevent
+previous
+previously
+price
+pride
+priest
+primarily
+primary
+prime
+principal
+principle
+print
+prior
+priority
+prison
+prisoner
+privacy
+private
+probably
+problem
+procedure
+proceed
+process
+produce
+producer
+product
+production
+profession
+professional
+professor
+profile
+profit
+program
+progress
+project
+prominent
+promise
+promote
+prompt
+proof
+proper
+properly
+property
+proportion
+proposal
+propose
+proposed
+prosecutor
+prospect
+protect
+protection
+protein
+protest
+proud
+prove
+provide
+provider
+province
+provision
+psychological
+psychologist
+psychology
+public
+publication
+publicly
+publish
+publisher
+pull
+punishment
+purchase
+pure
+purpose
+pursue
+push
+put
+qualify
+quality
+quarter
+quarterback
+question
+quick
+quickly
+quiet
+quietly
+quit
+quite
+quote
+race
+racial
+radical
+radio
+rail
+rain
+raise
+range
+rank
+rapid
+rapidly
+rare
+rarely
+rate
+rather
+rating
+ratio
+raw
+reach
+react
+reaction
+read
+reader
+reading
+ready
+real
+reality
+realize
+really
+reason
+reasonable
+recall
+receive
+recent
+recently
+recipe
+recognition
+recognize
+recommend
+recommendation
+record
+recording
+recover
+recovery
+recruit
+red
+reduce
+reduction
+refer
+reference
+reflect
+reflection
+reform
+refugee
+refuse
+regard
+regarding
+regardless
+regime
+region
+regional
+register
+regular
+regularly
+regulate
+regulation
+reinforce
+reject
+relate
+relation
+relationship
+relative
+relatively
+relax
+release
+relevant
+relief
+religion
+religious
+rely
+remain
+remaining
+remarkable
+remember
+remind
+remote
+remove
+repeat
+repeatedly
+replace
+reply
+report
+reporter
+represent
+representation
+representative
+Republican
+reputation
+request
+require
+requirement
+research
+researcher
+resemble
+reservation
+resident
+resist
+resistance
+resolution
+resolve
+resort
+resource
+respect
+respond
+respondent
+response
+responsibility
+responsible
+rest
+restaurant
+restore
+restriction
+result
+retain
+retire
+retirement
+return
+reveal
+revenue
+review
+revolution
+rhythm
+rice
+rich
+rid
+ride
+rifle
+right
+ring
+rise
+risk
+river
+road
+rock
+role
+roll
+romantic
+roof
+room
+root
+rope
+rose
+rough
+roughly
+round
+route
+routine
+row
+rub
+rule
+run
+running
+rural
+rush
+Russian
+sacred
+sad
+safe
+safety
+sake
+salad
+salary
+sale
+sales
+salt
+same
+sample
+sanction
+sand
+satellite
+satisfaction
+satisfy
+sauce
+save
+saving
+say
+scale
+scandal
+scared
+scenario
+scene
+schedule
+scheme
+scholar
+scholarship
+school
+science
+scientific
+scientist
+scope
+score
+scream
+screen
+script
+sea
+search
+season
+seat
+second
+secret
+secretary
+section
+sector
+secure
+security
+see
+seed
+seek
+seem
+segment
+seize
+select
+selection
+self
+sell
+Senate
+senator
+send
+senior
+sense
+sensitive
+sentence
+separate
+sequence
+series
+serious
+seriously
+serve
+service
+session
+set
+setting
+settle
+settlement
+seven
+several
+severe
+sex
+sexual
+shade
+shadow
+shake
+shall
+shape
+share
+sharp
+she
+sheet
+shelf
+shell
+shelter
+shift
+shine
+ship
+shirt
+shit
+shock
+shoe
+shoot
+shooting
+shop
+shopping
+shore
+short
+shortly
+shot
+should
+shoulder
+shout
+show
+shower
+shrug
+shut
+sick
+side
+sigh
+sight
+sign
+signal
+significance
+significant
+significantly
+silence
+silent
+silver
+similar
+similarly
+simple
+simply
+sin
+since
+sing
+singer
+single
+sink
+sir
+sister
+sit
+site
+situation
+six
+size
+ski
+skill
+skin
+sky
+slave
+sleep
+slice
+slide
+slight
+slightly
+slip
+slow
+slowly
+small
+smart
+smell
+smile
+smoke
+smooth
+snap
+snow
+so
+so-called
+soccer
+social
+society
+soft
+software
+soil
+solar
+soldier
+solid
+solution
+solve
+some
+somebody
+somehow
+someone
+something
+sometimes
+somewhat
+somewhere
+son
+song
+soon
+sophisticated
+sorry
+sort
+soul
+sound
+soup
+source
+south
+southern
+Soviet
+space
+Spanish
+speak
+speaker
+special
+specialist
+species
+specific
+specifically
+speech
+speed
+spend
+spending
+spin
+spirit
+spiritual
+split
+spokesman
+sport
+spot
+spread
+spring
+square
+squeeze
+stability
+stable
+staff
+stage
+stair
+stake
+stand
+standard
+standing
+star
+stare
+start
+state
+statement
+station
+statistics
+status
+stay
+steady
+steal
+steel
+step
+stick
+still
+stir
+stock
+stomach
+stone
+stop
+storage
+store
+storm
+story
+straight
+strange
+stranger
+strategic
+strategy
+stream
+street
+strength
+strengthen
+stress
+stretch
+strike
+string
+strip
+stroke
+strong
+strongly
+structure
+struggle
+student
+studio
+study
+stuff
+stupid
+style
+subject
+submit
+subsequent
+substance
+substantial
+succeed
+success
+successful
+successfully
+such
+sudden
+suddenly
+sue
+suffer
+sufficient
+sugar
+suggest
+suggestion
+suicide
+suit
+summer
+summit
+sun
+super
+supply
+support
+supporter
+suppose
+supposed
+Supreme
+sure
+surely
+surface
+surgery
+surprise
+surprised
+surprising
+surprisingly
+surround
+survey
+survival
+survive
+survivor
+suspect
+sustain
+swear
+sweep
+sweet
+swim
+swing
+switch
+symbol
+symptom
+system
+table
+tablespoon
+tactic
+tail
+take
+tale
+talent
+talk
+tall
+tank
+tap
+tape
+target
+task
+taste
+tax
+taxpayer
+tea
+teach
+teacher
+teaching
+team
+tear
+teaspoon
+technical
+technique
+technology
+teen
+teenager
+telephone
+telescope
+television
+tell
+temperature
+temporary
+ten
+tend
+tendency
+tennis
+tension
+tent
+term
+terms
+terrible
+territory
+terror
+terrorism
+terrorist
+test
+testify
+testimony
+testing
+text
+than
+thank
+thanks
+that
+the
+theater
+their
+them
+theme
+themselves
+then
+theory
+therapy
+there
+therefore
+these
+they
+thick
+thin
+thing
+think
+thinking
+third
+thirty
+this
+those
+though
+thought
+thousand
+threat
+threaten
+three
+throat
+through
+throughout
+throw
+thus
+ticket
+tie
+tight
+time
+tiny
+tip
+tire
+tired
+tissue
+title
+to
+tobacco
+today
+toe
+together
+tomato
+tomorrow
+tone
+tongue
+tonight
+too
+tool
+tooth
+top
+topic
+toss
+total
+totally
+touch
+tough
+tour
+tourist
+tournament
+toward
+towards
+tower
+town
+toy
+trace
+track
+trade
+tradition
+traditional
+traffic
+tragedy
+trail
+train
+training
+transfer
+transform
+transformation
+transition
+translate
+transportation
+travel
+treat
+treatment
+treaty
+tree
+tremendous
+trend
+trial
+tribe
+trick
+trip
+troop
+trouble
+truck
+true
+truly
+trust
+truth
+try
+tube
+tunnel
+turn
+TV
+twelve
+twenty
+twice
+twin
+two
+type
+typical
+typically
+ugly
+ultimate
+ultimately
+unable
+uncle
+under
+undergo
+understand
+understanding
+unfortunately
+uniform
+union
+unique
+unit
+United
+universal
+universe
+university
+unknown
+unless
+unlike
+unlikely
+until
+unusual
+up
+upon
+upper
+urban
+urge
+us
+use
+used
+useful
+user
+usual
+usually
+utility
+vacation
+valley
+valuable
+value
+variable
+variation
+variety
+various
+vary
+vast
+vegetable
+vehicle
+venture
+version
+versus
+very
+vessel
+veteran
+via
+victim
+victory
+video
+view
+viewer
+village
+violate
+violation
+violence
+violent
+virtually
+virtue
+virus
+visible
+vision
+visit
+visitor
+visual
+vital
+voice
+volume
+volunteer
+vote
+voter
+vs
+vulnerable
+wage
+wait
+wake
+walk
+wall
+wander
+want
+war
+warm
+warn
+warning
+wash
+waste
+watch
+water
+wave
+way
+we
+weak
+wealth
+wealthy
+weapon
+wear
+weather
+wedding
+week
+weekend
+weekly
+weigh
+weight
+welcome
+welfare
+well
+west
+western
+wet
+what
+whatever
+wheel
+when
+whenever
+where
+whereas
+whether
+which
+while
+whisper
+white
+who
+whole
+whom
+whose
+why
+wide
+widely
+widespread
+wife
+wild
+will
+willing
+win
+wind
+window
+wine
+wing
+winner
+winter
+wipe
+wire
+wisdom
+wise
+wish
+with
+withdraw
+within
+without
+witness
+woman
+wonder
+wonderful
+wood
+wooden
+word
+work
+worker
+working
+works
+workshop
+world
+worried
+worry
+worth
+would
+wound
+wrap
+write
+writer
+writing
+wrong
+yard
+yeah
+year
+yell
+yellow
+yes
+yesterday
+yet
+yield
+you
+young
+your
+yours
+yourself
+youth
+zone</textarea>
+				</form>
+			</div>	
 			
-	
-// If using existing list we disable the configuration controls as they cannot be altered during an experiment	
-function lockManualInput()
-	{
-	var jsn = document.getElementById("listid").value;
-	if (jsn.length > 0)
-		{
-		document.forms["encodeform"]["N"].disabled = true;
-		document.getElementById("Nid").style.color='lightgray';	
-		document.forms["encodeform"]["ratio"].disabled = true;
-		document.forms["encodeform"]["phonetic"].disabled = true;	
-		// enable the lookup button
-		document.forms["encodeform"]["lookupID"].disabled = false;	
-		document.getElementById("L1").style.color='lightgray';		
-		document.getElementById("L2").style.color='lightgray';		
-		document.getElementById("L3").style.color='lightgray';		
-		// get the parameters
-		var IDs = new Map();
-		// read and check JSON object
-		if (!!jsn)	
-			{			
-			try 
-				{
-				IDs = new Map(JSON.parse(jsn));	
-				} 
-			catch (e) 
-				{
-				document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">"+e.name+" in ID-list: "+e.message+".</p>";	
-				document.getElementById("listid").style.backgroundColor = 'pink';
-				return false;	
-				}
-			var participants = IDs.get("particpants");
-			var ratio = IDs.get("coding-ratio");
-			var phonetic = IDs.get("phonetic-coding");		
-			document.forms["encodeform"]["N"].value = participants;
-			document.forms["encodeform"]["ratio"].value = ratio;
-			document.forms["encodeform"]["phonetic"].checked = phonetic;			
-			}				
-		}
-	else
-		{
-		document.forms["encodeform"]["N"].disabled = false;
-		document.getElementById("Nid").style.color='';			
-		document.forms["encodeform"]["ratio"].disabled = false;
-		document.forms["encodeform"]["phonetic"].disabled = false;	
-		document.getElementById("L1").style.color='';		
-		document.getElementById("L2").style.color='';		
-		document.getElementById("L3").style.color='';				
-		}		
-	return false;
-	}
-	
-// If we run the procedure for the first time adding the first participant we disable the JSON input box
-function lockAutoInput()
-	{
-	var participants = document.forms["encodeform"]["N"].value;	
-	if (participants.length > 0)
-		{
-		document.getElementById("listid").disabled = true;
-		document.getElementById("L0").style.color='lightgray';				
-		}
-	else
-		{
-		document.getElementById("listid").disabled = false;
-		document.getElementById("L0").style.color='';				
-		}		
-	return false;
-	}
-
-// check that it is a valid characters in other european languages - not only a..z.
-function isLetter(c) 
-	{
-	return c.toLowerCase() != c.toUpperCase();
-	}
-// check that the symbols are valid
-function checkValidName(name)
-	{
-	for (var c of name)
-		{
-		if ("0123456789 -.@".includes(c))	// allow these special characters if used with other representations.
-			{
-			continue;
-			}
-		if (!isLetter(c))
-			{
-			return c;
-			}
-		}
-	return "";
-	}
-
-function add()
-{
-	// reset background colours of UI elements 		
-	document.getElementById("listid").style.backgroundColor = '';		
-	document.forms["encodeform"]["name"].style.backgroundColor = '';
-	document.forms["encodeform"]["ratio"].style.backgroundColor = '';
-	document.forms["encodeform"]["N"].style.backgroundColor = '';
-	document.forms["encodeform"]["passwordid"].style.backgroundColor = '';	
-	var jsn = document.getElementById("listid").value;
-	var IDs = new Map();
-	
-	if (!!jsn)	
-		{			
-		try 
-			{
-			IDs = new Map(JSON.parse(jsn));	
-			} 
-		catch (e) 
-			{
-			document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">"+e.name+" in ID-list: "+e.message+".</p>";	
-			document.getElementById("listid").style.backgroundColor = 'pink';
-			return false;	
-			}			
-		}
-	var name = document.forms["encodeform"]["name"].value;
-	if (name === "")
-		{
-		document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Please input the participants name.</p>";
-		document.forms["encodeform"]["name"].style.backgroundColor = 'pink';		
-		return false;
-		}
-	// check valid name
-	var error = checkValidName(name);
-	if (error.length > 0)
-		{
-		document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Invalid character \""+error+"\" in name.</p>";
-		document.forms["encodeform"]["name"].style.backgroundColor = 'pink';		
-		return false;			
-		}
-	var participants = document.forms["encodeform"]["N"].value;
-	var ratio = document.forms["encodeform"]["ratio"].value;
-	var phonetic = document.forms["encodeform"]["phonetic"].checked;
-	var passwordIN = document.forms["encodeform"]["password"].value;
-	passwordIN = passwordIN.hashCode();
-	var passwordSTORED = passwordIN;
-	
-	if (!!jsn)
-		{
-		participants = IDs.get("particpants");
-		ratio = IDs.get("coding-ratio");
-		phonetic = IDs.get("phonetic-coding");	
-		passwordSTORED = IDs.get("password");		
-		}
-	else
-		{				
-		if (participants === "")
-			{
-			document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Please input the maximum number of participants.</p>";
-			document.forms["encodeform"]["N"].style.backgroundColor = 'pink';		
-			return false;
-			}	
-			
-		IDs.set("particpants",participants);
-		IDs.set("coding-ratio",ratio);
-		IDs.set("phonetic-coding",phonetic);
-		IDs.set("password",passwordIN);
-		}
-	// check password match
-
-	if (passwordSTORED !== passwordIN)
-		{
-		document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Incorrect password.</p>";
-		document.getElementById("passwordid").style.backgroundColor = 'pink';		
-		return false;		
-		}
-	// check if phonetic coding
-	if (phonetic)
-		{
-		name = encodePhonetic(name);
-		}
-	// add password salt
-	if (passwordIN !== 0)
-		{
-		name += passwordIN;
-		}
-		
-	var L = participants*ratio;
-
-	// add the new element
-	addPerson(IDs, name, L);
-	var id = findEncoding(IDs, name, L);
-	
-	// provide feedback to user	
-	var anonymityEstimate = "<p><b>WARNING</b>: The population these participants are recruited from should comprise more than <b>"+(5*L).toLocaleString()+"</b> individuals to ensure a mimum level of anonymity (k-anonymity = 5). Population could here refer to a country, region, particular institution, or similar, where there are publicly available list of names such as phone directories. Note that this is a probabilistic estimate only.<p>";
-	document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">New particpant id: <b>"+id+"</b>. Remember to copy and store the updated list.</p>"+anonymityEstimate;		
-	// set json background colour to indicate change		
-	document.getElementById("listid").style.backgroundColor='lightpink';
-	
-	let str = JSON.stringify(Array.from(IDs.entries()), null, 2);
-	document.getElementById("listid").value = str;
-	lockManualInput();
-	document.getElementById("listid").disabled = false;
-	document.getElementById("L0").style.color='';		
-	return false;
-}
-
-function lookup()
-{
-	// reset background colours of UI elements 		
-	document.getElementById("listid").style.backgroundColor = '';		
-	document.forms["encodeform"]["name"].style.backgroundColor = '';
-	document.forms["encodeform"]["ratio"].style.backgroundColor = '';
-	document.forms["encodeform"]["N"].style.backgroundColor = '';
-	document.forms["encodeform"]["passwordid"].style.backgroundColor = '';	
-	
-	var jsn = document.getElementById("listid").value;
-	var IDs = new Map();
-	
-	if (!!jsn)	
-		{			
-		try 
-			{
-			IDs = new Map(JSON.parse(jsn));	
-			} 
-		catch (e) 
-			{
-			document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">"+e.name+" in ID-list: "+e.message+".</p>";	
-			document.getElementById("listid").style.backgroundColor = 'pink';
-			return false;	
-			}			
-		}
-	var name = document.forms["encodeform"]["name"].value;
-	if (name === "")
-		{
-		document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Please input the participants name.</p>";
-		document.forms["encodeform"]["name"].style.backgroundColor = 'pink';		
-		return false;
-		}
-	var error = checkValidName(name);
-	if (error.length > 0)
-		{
-		document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Invalid character \""+error+"\" in name.</p>";
-		document.forms["encodeform"]["name"].style.backgroundColor = 'pink';		
-		return false;			
-		}		
-	var participants = document.forms["encodeform"]["N"].value;
-	var ratio = document.forms["encodeform"]["ratio"].value;
-	var phonetic = document.forms["encodeform"]["phonetic"].checked;
-	var passwordIN = document.forms["encodeform"]["password"].value;
-	passwordIN = passwordIN.hashCode();	
-	var passwordSTORED = "";
-	
-	if (!!jsn)
-		{
-		participants = IDs.get("particpants");
-		ratio = IDs.get("coding-ratio");
-		phonetic = IDs.get("phonetic-coding");	
-		passwordSTORED = IDs.get("password");
-		}
-	// check password match
-	if (passwordSTORED !== passwordIN)
-		{
-		document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Incorrect password.</p>";
-		document.getElementById("passwordid").style.backgroundColor = 'pink';			
-		return false;		
-		}
-		
-	if (phonetic)
-		{
-		name = encodePhonetic(name);
-		}
-	// add password salt
-	if (passwordIN !== 0)
-		{
-		name += passwordIN;
-		}
-		
-	var L = participants*ratio;
-
-	var existingID = findEncoding(IDs, name, L)
-	
-	// provide feedback to user	
-	var anonymityEstimate = "<p><b>WARNING</b>: The population these participants are recruited from should comprise more than <b>"+(5*L).toLocaleString()+"</b> individuals to ensure a mimum level of anonymity (k-anonymity = 5). Population could here refer to a country, region, particular institution, or similar, where there are publicly available list of names such as phone directories. Note that this is a probabilistic estimate only.<p>";
-	if (IDs.has(existingID))
-		{
-		document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Particpant id: <b>"+existingID+"</b>.</p>"+ anonymityEstimate;	
-		}
-	else
-		{
-		document.getElementById("participantid").innerHTML = "<p style=\"color:rgb(255,0,0);\">Particpant not found (id="+existingID+").</p>"+ anonymityEstimate;	
-		}		
-	// set json background colour to indicate change		
-	document.getElementById("listid").style.backgroundColor='';
-	
-	lockManualInput();
-	return false;
-}
-
-// to link this testing routine - uncomment call in loadSalts() method which is called on page load
-// output in console window (shift+control+J to view in chrome)
-function tester()
-	{
-	// configurations		
-	var sample = [
-						"Rodman, David M.",
-						"Penn, Dustin J.",
-						"Bernard, Ora",
-						"Chelune, Gordon J.",
-						"Hoyle, Charles H.V.",
-						"Mortensen, James K",
-						"Wetterau, John R.",
-						"Couper, Mick P.",
-						"WPersson, Mats"
-					   ];
-	var participants = 10;
-	var ratio = 1;
-	// setup
-	var L = participants*ratio;
-	var IDs = new Map();
-	// adding
-	for (var name of sample)
-		{
-		var phon = encodePhonetic(name);			
-		addPerson(IDs, phon, L);
-		}
-		
-	// output datastructure
-	let str = JSON.stringify(Array.from(IDs.entries()), null, 2);
-	console.log(str);
-	console.log("------------------------------");	
-				
-	// retrieving and output results
-	console.log("Look for dubplicate numbers");
-	var results = [];
-	for (var name of sample)
-		{
-		var phon = encodePhonetic(name);			
-		var id = findEncoding(IDs, phon, L);
-		var output = ""+id+"\t "+name;
-		if (results.includes(id))
-			{
-			output += "\t already exists";
-			}
-		else
-			{
-		    output += "\t ok";
-			}
-		results.push(id);
-		console.log(output);
-		}	
-	}
-	
-    </script>
-</body>
+			<div class="info">
+				<h2>About the tool</h2>
+				<p>By Frode Eika Sandnes, Oslo Metropolitan University, August, 2021.</p>
+				<p>Note that the current implementation only works with names transcribed using Latin characters.</p>
+				<p>Each name must be unique. Uncheck <em>Phonetic coding</em> if the tool is used with other other symbols and/or no-name entiities (Switching off phonetic coding will disable the input error tolerance mechanisms).</p>	
+				<p>Details are documented in: Frode Eika Sandnes, CANDIDATE: A tool for generating anonymous participant-linking IDs for multi-session studies. PLOS ONE, 2021. <a title="Link to PLOS ONE paper page" href="https://doi.org/10.1371/journal.pone.0260569">https://doi.org/10.1371/journal.pone.0260569</a></p>
+			</div>		
+		</div>
+	</body>
 </html>
