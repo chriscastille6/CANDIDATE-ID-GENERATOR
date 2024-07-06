@@ -211,6 +211,12 @@
 
             document.getElementById("result").innerText = participantID;
         }
+     function handleKeyPress(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault(); // Prevent form submission
+                generateID(); // Call generateID function on Enter key press
+            }
+        }
     </script>
 </head>
 <body>
