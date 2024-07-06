@@ -34,6 +34,14 @@
             background-color: #45a049;
         }
     </style>
+    </head>
+<body>
+    <div class="container">
+        <h2>Participant ID Generator</h2>
+        <input type="text" id="participantName" placeholder="Enter your name">
+        <br>
+        <button onclick="generateID()">Generate ID</button>
+        <p id="result"></p>
     <script>
         // Soundex algorithm implementation
         function soundex(name) {
@@ -254,18 +262,11 @@
             }
         }
     </script>
-</head>
-<body>
-    <div class="container">
-        <h2>Participant ID Generator</h2>
-        <input type="text" id="participantName" placeholder="Enter your name">
-        <br>
-        <button onclick="generateID()">Generate ID</button>
-        <p id="result"></p>
+
     </div>
 </body>
 </html>
-// Assuming your "Generate ID" button has an id="generateButton"
+
 
 document.addEventListener("DOMContentLoaded", function() {
     // Add event listener for key press on the whole document
