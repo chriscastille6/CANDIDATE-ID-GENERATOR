@@ -180,27 +180,27 @@
             // Set encoding type based on the first letter of the name
             switch (firstLetter) {
                 case 'A':
-                case 'B':
+                case 'D':
                     encodingType = 0; // Example: Use hashCode for names starting with A or B
                     break;
-                case 'C':
-                case 'D':
+                case 'E':
+                case 'H':
                     encodingType = 1; // Example: Use djb2reverse for names starting with C or D
                     break;
-                case 'E':
-                case 'F':
+                case 'I':
+                case 'L':
                     encodingType = 2; // Example: Use crc32 for names starting with E or F
                     break;
-                case 'G':
-                case 'H':
+                case 'M':
+                case 'P':
                     encodingType = 3; // Example: Use crc32reverse for names starting with G or H
                     break;
-                case 'I':
-                case 'J':
+                case 'Q':
+                case 'T':
                     encodingType = 4; // Example: Use djb2shift for names starting with I or J
                     break;
-                case 'K':
-                case 'L':
+                case 'U':
+                case 'Z':
                     encodingType = 5; // Example: Use djb2salt for names starting with K or L
                     break;
                 default:
