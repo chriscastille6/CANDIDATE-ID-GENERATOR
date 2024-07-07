@@ -254,7 +254,7 @@ function findFreeCodingType(encodings, name, L)
 
     // Determine encoding type based on the first letter of participantName
     var firstLetter = participantName.charAt(0).toUpperCase();
-    var encodingType = document.getElementbyID("s").value;
+    var encodingType = document.getElementbyID(soundex(participantName)).value;
 	 //firstLetter.charCodeAt(0) % 6; // Ensure encodingType is within 0-5
 
     var participantID = coding(participantName, L, encodingType);
