@@ -250,13 +250,14 @@ function findFreeCodingType(encodings, name, L)
 
  function generateID() {
     var participantName = document.getElementById("participantName").value;
-    var numberOfIDs = 5000; // Maximum number of IDs
+    var L = 5000; // Maximum number of IDs
 
     // Determine encoding type based on the first letter of participantName
     var firstLetter = participantName.charAt(0).toUpperCase();
-    var encodingType = firstLetter.charCodeAt(0) % 6; // Ensure encodingType is within 0-5
+    var encodingType = document.getElementbyID("s").value;
+	 //firstLetter.charCodeAt(0) % 6; // Ensure encodingType is within 0-5
 
-    var participantID = coding(participantName, numberOfIDs, encodingType);
+    var participantID = coding(participantName, L, encodingType);
 
     // Display participant ID and encoding type
     document.getElementById("result").innerText = participantID;
@@ -292,4 +293,4 @@ function findFreeCodingType(encodings, name, L)
 // overall changes made:
 // removed following functions: getValidationKey, addPerson, encodePhonetic, lockManualInput,lockAutoInput, isLetter, checkValidName, add, lookup, tester
 // all code within </script> section reamined the same as .js file from original CANDIDATE script
-// created generate id function to set sample size (numberofIDs = 5000), 
+// created generate id function to set sample size (L = 5000), 
