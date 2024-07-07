@@ -193,76 +193,53 @@ function coding(name,L,type)
     return ID;
     }	
 	    var validationOffset = 10; // global and arbitrary - and long away from the others	
-// Search for a hash function type that results in unused IDs	
-function findFreeCodingType(encodings, name, L)
-	{
-	// first find number of possible coding types
-	var noCodingTypes = 14 + salt.length;
-	for (var type=0;type<noCodingTypes;type++)
-		{
-		var ID = coding(name,L,type);
-		if (!encodings.has(ID))
-			{
-			if (type == 0) // the default encoding
-				{
-				return type;
-				}
-			// check if validation code is free also
-			ID = coding(name,L,0);  // the default code as we have collision
-			var validation = coding(name,L,type+validationOffset);
-//			if (validations.get(ID) == null || !validations.get(ID).has(validation))
-			if (!encodings.has(getValidationKey(ID)) || !encodings.get(getValidationKey(ID)).includes(validation))
-				{				
-				return type;
-				}	
-			}
-		}
-	return -1; // could not find a match
-	}
-	    
- function findEncoding(encodings, name, L)
-	{
-	// get the default (base) encoding
-	var ID = coding(name,L,0);
-	// lookup the coding type
-	var types = encodings.get(ID);
+// Function to find a free coding type based on encodings map and participant name
+        function findFreeCodingType(encodings, name, L) {
+            // Your logic to find a free coding type
+            var noCodingTypes = 14 + salt.length; // Example, adjust based on your implementation
+            for (var type = 0; type < noCodingTypes; type++) {
+                var ID = coding(name, L, type);
+                if (!encodings.has(ID)) {
+                    return type;
+                }
+            }
+            return -1; // Could not find a free coding type
+        }
 
-	var validation = encodings.get(getValidationKey(ID));
-	// find the one that is validtypes
-	if (types == null)
-		{
-		return ID;
-		}
-	for (var i = 1;i < types.length;i++)
-		{
-		var type = types[i];
-		var code = validation[i];
-		var ID2 = coding(name,L,type);
-		var valid = coding(name,L,type+validationOffset);
-		// check that valid code is mathcing AND that it represent a valid value             
-		if (valid == code && encodings.get(getValidationKey(ID2))!=null)
-			{
-			return ID2;
-			} 
-		}
-	return ID;
-	}   
+        // Function to find encoding based on encodings map and participant name
+        function findEncoding(encodings, name, L) {
+            // Your logic to find an encoding
+            var ID = coding(name, L, 0); // Default encoding type
+            var types = encodings.get(ID);
+            if (types == null) {
+                return ID;
+            }
+            for (var i = 1; i < types.length; i++) {
+                var type = types[i];
+                var ID2 = coding(name, L, type);
+                if (encodings.has(ID2)) {
+                    return ID2;
+                }
+            }
+            return ID;
+        }
 
- function generateID() {
-    var participantName = document.getElementById("participantName").value;
-    var L = 5000; // Maximum number of IDs
+   // Function to generate participant ID based on name and encoding type
+        function generateID() {
+            var participantName = document.getElementById("participantName").value;
+            var L = 5000; // Maximum number of IDs
 
-    // Determine encoding type based on the first letter of participantName
-    var firstLetter = participantName.charAt(0).toUpperCase();
-    var encodingType = document.getElementbyID(soundex(participantName)).value;
-	 //firstLetter.charCodeAt(0) % 6; // Ensure encodingType is within 0-5
+            // Determine encoding type dynamically
+            var encodingType = findFreeCodingType(new Map(), participantName, L); // Replace with your encodings map
 
-    var participantID = coding(participantName, L, encodingType);
+            // Generate participant ID
+            var participantID = coding(participantName, L, encodingType);
 
-    // Display participant ID and encoding type
-    document.getElementById("result").innerText = participantID;
-    document.getElementById("encodingType").innerText = "Encoding Type: " + encodingType;
-}
+            // Display participant ID and encoding type
+            document.getElementById("result").innerText = participantID;
+            document.getElementById("encodingType").innerText = "Encoding Type: " + encodingType;
+        }
+
 
      function handleKeyPress(event) {
             if (event.keyCode === 13) {
@@ -292,5 +269,5 @@ function findFreeCodingType(encodings, name, L)
 
 // overall changes made:
 // removed following functions: getValidationKey, addPerson, encodePhonetic, lockManualInput,lockAutoInput, isLetter, checkValidName, add, lookup, tester
-// all code within </script> section reamined the same as .js file from original CANDIDATE script
+// aremoved validation sections of other functions
 // created generate id function to set sample size (L = 5000), 
