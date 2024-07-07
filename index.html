@@ -192,19 +192,31 @@ function coding(name,L,type)
 		}
     return ID;
     }	
-	    var validationOffset = 10; // global and arbitrary - and long away from the others	
-// Function to find a free coding type based on encodings map and participant name
-        function findFreeCodingType(encodings, name, L) {
-            // Your logic to find a free coding type
-            var noCodingTypes = 14 + salt.length; // Example, adjust based on your implementation
-            for (var type = 0; type < noCodingTypes; type++) {
-                var ID = coding(name, L, type);
-                if (!encodings.has(ID)) {
-                    return type;
-                }
-            }
-            return -1; // Could not find a free coding type
-        }
+	   var validationOffset = 10; // global and arbitrary - and long away from the others	
+// Search for a hash function type that results in unused IDs	
+function findFreeCodingType(encodings, name, L)
+	{
+	// first find number of possible coding types
+	var noCodingTypes = 14 + salt.length;
+	for (var type=0;type<noCodingTypes;type++)
+		{
+		var ID = coding(name,L,type);
+		if (!encodings.has(ID))
+			{
+			if (type == 0) // the default encoding
+				{
+				return type;
+				}
+			// check if validation code is free also
+			ID = coding(name,L,0);  // the default code as we have collision
+			var validation = coding(name,L,type+validationOffset);
+//			if (validations.get(ID) == null || !validations.get(ID).has(validation))
+			if (!encodings.has(getValidationKey(ID)) || !encodings.get(getValidationKey(ID)).includes(validation))
+				{				
+				return type;
+				}	
+			}
+		}
 
         // Function to find encoding based on encodings map and participant name
         function findEncoding(encodings, name, L) {
