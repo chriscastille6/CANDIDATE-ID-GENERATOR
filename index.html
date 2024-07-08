@@ -305,7 +305,7 @@ function findEncoding(encodings, name, L)
 <body>
     <div class="container">
         <h2>Participant ID Generator</h2>
-        <p>Enter Participant Name:</p>
+        <p>Enter First and Last Name Below:</p>
         <form onsubmit="event.preventDefault(); generateID();">
             <input type="text" id="participantName" placeholder="Enter participant name" onkeypress="handleKeyPress(event)">
             <button type="submit">Generate ID</button>
@@ -314,6 +314,10 @@ function findEncoding(encodings, name, L)
         <p id="result"></p>
         <p id="encodingType"></p>
     </div>
+	The above ID generator uses several different encoding methods that are determined by the first letter of your first name. The logic behind the calculations can be seen in the following article,<a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0260569">"CANDIDATE: A tool for generating anonymous participant-linking IDs in multi-session studies"</a>, as well as the original code used to compute your ID. For this application, the original code was modified to better fit our usage of generating an ID for this survey, which resulted in a simplified version that only return an ID based on the name you input into the generator.
+
 </body>
 </html>
+
+
 
