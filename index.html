@@ -8,11 +8,12 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            text-align: center;
+            line-height: 1.6;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
-            text-align: center;
         }
         input[type="text"] {
             width: 100%;
@@ -29,12 +30,15 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-top: 10px;
         }
         button:hover {
             background-color: #45a049;
         }
+        p {
+            margin: 20px 0;
+        }
     </style>
-    
     <script>
   function soundex(name)
 	{
@@ -313,11 +317,11 @@ function findEncoding(encodings, name, L)
         <p>Generated Participant ID:</p>
         <p id="result"></p>
         <p id="encodingType"></p>
-    
-	The above ID generator uses several different encoding methods that are determined by the first letter of your first name. The logic behind the calculations can be seen in the following article,<a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0260569">"CANDIDATE: A tool for generating anonymous participant-linking IDs in multi-session studies"</a>, as well as the original code used to compute your ID. For this application, the original code was modified to better fit our usage of generating an ID for this survey, which resulted in a simplified version that only returns an ID based on the name you input into the generator. As stated in the directions of the survey, the name you enter in the the generator will not be stored as it is only used to generate an ID to use in the survey. 
-	</div>
+    </div>
+    <div>
+        <p>The above ID generator uses several different encoding methods that are determined by the first letter of your first name. The logic behind the calculations can be seen in the following article, <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0260569">"CANDIDATE: A tool for generating anonymous participant-linking IDs in multi-session studies"</a>, as well as the original code used to compute your ID. For this application, the original code was modified to better fit our usage of generating an ID for this survey, which resulted in a simplified version that only returns an ID based on the name you input into the generator. As stated in the directions of the survey, the name you enter in the generator will not be stored as it is only used to generate an ID to use in the survey.</p>
+    </div>
 </body>
 </html>
-
 
 
