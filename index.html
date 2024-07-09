@@ -40,7 +40,6 @@
           margin: 10px 0;
           text-align: center;
           padding: 1%;
-          
         }
     </style>
     <script>
@@ -49,7 +48,6 @@
     let s = [];
     let si = 1;
     let c;
-
     //              ABCDEFGHIJKLMNOPQRSTUVWXYZ
     let mappings = "01230120022455012623010202";
 
@@ -76,7 +74,6 @@
 				}
 			}
 		}
-
     if(si <= 3)
 		{
         while(si <= 3)
@@ -88,7 +85,6 @@
 
     return s.join("");
 	}
-
 String.prototype.hashCode = function()
 	{
     var hash = 0;
@@ -199,8 +195,7 @@ function coding(name,L,type)
 				break;                    
 		}
     return ID;
-    }	
-				
+    }				
 	// Function to find encoding based on encodings map and participant name
 function findEncoding(encodings, name, L)
 	{
@@ -211,7 +206,6 @@ function findEncoding(encodings, name, L)
 	
 	for (var i = 1;i < types.length;i++)
 		{
-	
 		var type = types[i];
 		//var code = validation[i];
 		var ID2 = coding(name,L,type);
@@ -219,9 +213,7 @@ function findEncoding(encodings, name, L)
 		}
 	return ID;
 	}   
-
-
- function findEncoding(encodings, name, L)
+function findEncoding(encodings, name, L)
 	{
 	// get the default (base) encoding
 	var ID = coding(name,L,0);
@@ -238,11 +230,7 @@ function findEncoding(encodings, name, L)
 		}
 	return  ID;
 	} 
-
-	    
-
-
-        function determineEncodingType(name) {
+function determineEncodingType(name) {
         var L = 5000; // Sample size
         var soundexCode = soundex(name);
         var hash = name.hashCode();
@@ -275,8 +263,7 @@ function findEncoding(encodings, name, L)
 
         return simplifiedTypes;
     }
-
-    function generateID() {
+function generateID() {
         var L = 99999999; // (Sample size) used to set amount of digits desired in output
         var name = document.getElementById("participantName").value;
 
@@ -295,19 +282,23 @@ function findEncoding(encodings, name, L)
         // document.getElementById("encodingType").innerText = "Encoding Type: " + chosenEncodingType;
     }
 
-    function handleKeyPress(event) {
+function handleKeyPress(event) {
         if (event.keyCode === 13) {
             event.preventDefault(); // Prevent form submission
             generateID(); // Call generateID function on Enter key press
         }
     }
+
+	    
 	    // overall changes made:
 // removed following functions: findFreeCodingType, getValidationKey, addPerson, encodePhonetic, lockManualInput,lockAutoInput, isLetter, checkValidName, add, lookup, tester
-// removed validation sections from all other functions bewing used 
-// created generate id function and set sample size (L = 5000), & (L = 99999999) to set desired amount of digits in ID
+// removed validation sections from all other functions being used 
+// created generate id function and set sample size (L = 5000), & (L = 99999999) to set desired amount of digits in ID (8)
 // created determineEncodingType function to check that different encoding types were being used. can be shown by removing // from line 287, document.getElementById, under generateID function
 // added handleKeyPress function to improve user freindliness 
 
+
+	    
     </script>
 </head>
 <body>
