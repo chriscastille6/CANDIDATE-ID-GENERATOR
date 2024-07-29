@@ -230,7 +230,7 @@ function findEncoding(encodings, name, L)
 	return  ID;
 	} 
 function determineEncodingType(name) {
-	name = name.toUppercase();
+	name = name.toUpperCase();
         var L = 5000; // Sample size
         var soundexCode = soundex(name);
         var hash = name.hashCode();
