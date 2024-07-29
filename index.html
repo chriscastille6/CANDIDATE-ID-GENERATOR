@@ -169,6 +169,7 @@ function djb2salt(str,i)
 	}
 function coding(name,L,type)
 	{
+	name = name.toUpperCase();
 	ID = -1;
 
 	switch (type)
@@ -229,6 +230,7 @@ function findEncoding(encodings, name, L)
 	return  ID;
 	} 
 function determineEncodingType(name) {
+	name = name.toUppercase();
         var L = 5000; // Sample size
         var soundexCode = soundex(name);
         var hash = name.hashCode();
@@ -263,7 +265,7 @@ function determineEncodingType(name) {
     }
 function generateID() {
         var L = 99999999; // (Sample size) used to set amount of digits desired in output
-        var name = document.getElementById("participantName").value;
+        var name = document.getElementById("participantName").value.trim().toUpperCase();
 
         // Determine encoding types
         var encodingTypes = determineEncodingType(name);
@@ -294,6 +296,7 @@ function handleKeyPress(event) {
 // created generate id function and set sample size (L = 5000), & (L = 99999999) to set desired amount of digits in ID (8)
 // created determineEncodingType function to check that different encoding types were being used. can be shown by removing // from line 282, document.getElementById, under generateID function
 // added handleKeyPress function to improve user freindliness 
+// entire script was revised to remove the usage of capitalization in the Participant's names, each function now includes a "toUpperCase" portion to capitalize all letters 
 
 
 	    
