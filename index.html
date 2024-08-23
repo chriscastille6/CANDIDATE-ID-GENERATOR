@@ -308,7 +308,7 @@ function handleKeyPress(event) {
         <p>Please enter your initials (e.g., "cmc") followed by the last four digits of your cell phone number (e.g., "0664"):</p>
 	    <p>(e.g., "cmc0664") </p>
         <form onsubmit="event.preventDefault(); generateID();">
-            <input type="text" id="participantName" placeholder="Enter participant name" onkeypress="handleKeyPress(event)">
+            <input type="text" id="participantName" placeholder="cmc0664" onkeypress="handleKeyPress(event)">
             <button type="submit">Generate ID</button>
         </form>
         <p>Generated Participant ID:</p>
