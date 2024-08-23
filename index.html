@@ -306,9 +306,9 @@ function handleKeyPress(event) {
     <div class="container">
         <h2>Participant ID Generator</h2>
         <p>Please enter the first and second letter of your first name and last name (e.g. Chris Castille = "chca") followed by the last four digits of your cell phone number (e.g., "0664"):</p>
-	    <p>(e.g., "cmc0664") </p>
+	    <p>(e.g., "chca0664") </p>
         <form onsubmit="event.preventDefault(); generateID();">
-            <input type="text" id="participantName" placeholder="cmc0664" onkeypress="handleKeyPress(event)">
+            <input type="text" id="participantName" placeholder="chca0664" onkeypress="handleKeyPress(event)">
             <button type="submit">Generate ID</button>
         </form>
         <p>Generated Participant ID:</p>
@@ -316,7 +316,7 @@ function handleKeyPress(event) {
         <p id="encodingType"></p>
     </div>
     <div>
-        <p>We do not store your unique ID (e.g., cmc0664). Rather, the above ID generator uses this information to give you a unique code that only you can access. This gives you ownership over your data. The logic behind the calculations can be seen in the following article, <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0260569">"CANDIDATE: A tool for generating anonymous participant-linking IDs in multi-session studies"</a>, as well as the original code used to compute your ID.</p>
+        <p>We do not store your unique ID (e.g., chca0664). Rather, the above ID generator uses this information to give you a unique code that only you can access. This gives you ownership over your data. The logic behind the calculations can be seen in the following article, <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0260569">"CANDIDATE: A tool for generating anonymous participant-linking IDs in multi-session studies"</a>, as well as the original code used to compute your ID.</p>
     </div>
 </body>
 </html>
