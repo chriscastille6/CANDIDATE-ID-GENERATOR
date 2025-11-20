@@ -3,322 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Participant ID Generator</title>
+    <title>Generate Your Candidate ID</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f6fa;
+            color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
         .container {
             max-width: 600px;
-            margin: 0 auto;
+            width: 100%;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 24px;
+        }
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid #3498db;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 6px;
+        }
+        .info-box strong {
+            color: #2c3e50;
+        }
+        .form-group {
+            margin: 24px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
         }
         input[type="text"] {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
             box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
         }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        .candidate-id-display {
+            background: #f8f9fa;
+            border: 2px solid #27ae60;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .candidate-id-display .label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+        .candidate-id-display .id {
+            font-size: 24px;
+            font-weight: 700;
+            color: #27ae60;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            margin: 12px 0;
             cursor: pointer;
-            margin-top: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
         }
-        button:hover {
-            background-color: #45a049;
+        .candidate-id-display .id:hover {
+            background-color: #e8f5e9;
         }
-        p {
-          font-family: Arial, sans-serif;
-          margin: 10px 0;
-          text-align: center;
-          padding: 1%;
+        .candidate-id-display .id.copied {
+            background-color: #c8e6c9;
+        }
+        .btn-copy {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .btn-copy:hover {
+            background: #2980b9;
+        }
+        .btn-copy:active {
+            transform: scale(0.98);
+        }
+        .success-message {
+            background: #d4edda;
+            border-left: 4px solid #27ae60;
+            padding: 12px;
+            margin: 16px 0;
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: #155724;
+            display: none;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            margin: 16px 0;
+            border-radius: 6px;
+            font-size: 0.9em;
         }
     </style>
-    <script>
-  function soundex(name)
-	{
-    let s = [];
-    let si = 1;
-    let c;
-    //              ABCDEFGHIJKLMNOPQRSTUVWXYZ
-    let mappings = "01230120022455012623010202";
-
-    s[0] = name[0].toUpperCase();
-
-    for(let i = 1, l = name.length; i < l; i++)
-		{
-        c = (name[i].toUpperCase()).charCodeAt(0) - 65;
-
-        if(c >= 0 && c <= 25)
-			{
-            if(mappings[c] != '0')
-				{
-                if(mappings[c] != s[si-1])
-					{
-                    s[si] = mappings[c];
-                    si++;
-					}
-
-/*                if(si > 3)
-					{
-                    break;
-					}*/
-				}
-			}
-		}
-    if(si <= 3)
-		{
-        while(si <= 3)
-			{
-            s[si] = '0';
-            si++;
-			}
-		}
-
-    return s.join("");
-	}
-String.prototype.hashCode = function()
-	{
-    var hash = 0;
-    for (var i = 0; i < this.length; i++) 
-		{
-        var character = this.charCodeAt(i);
-        hash = ((hash<<5)-hash)+character;
-        hash = hash & hash; // Convert to 32bit integer
-		}
-    return hash;
-	}	
-
-// This implementation is taken from 	https://stackoverflow.com/questions/8353134/javascript-crc32-function-and-php-crc32-not-matching-for-utf8/8419366#8419366 
-function Utf8Encode(string) 
-	{
-    string = string.replace(/\r\n/g,"\n");
-    var utftext = "";
-
-    for (var n = 0; n < string.length; n++) {
-        var c = string.charCodeAt(n);
-        if (c < 128) {
-            utftext += String.fromCharCode(c);
-        } else if((c > 127) && (c < 2048)) {
-            utftext += String.fromCharCode((c >> 6) | 192);
-            utftext += String.fromCharCode((c & 63) | 128);
-        } else {
-            utftext += String.fromCharCode((c >> 12) | 224);
-            utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-            utftext += String.fromCharCode((c & 63) | 128);
-        }
-    }
-    return utftext;
-	}
-function crc32(str) 
-	{
-    str = Utf8Encode(str);  
-    var table = "00000000 77073096 EE0E612C 990951BA 076DC419 706AF48F E963A535 9E6495A3 0EDB8832 79DCB8A4 E0D5E91E 97D2D988 09B64C2B 7EB17CBD E7B82D07 90BF1D91 1DB71064 6AB020F2 F3B97148 84BE41DE 1ADAD47D 6DDDE4EB F4D4B551 83D385C7 136C9856 646BA8C0 FD62F97A 8A65C9EC 14015C4F 63066CD9 FA0F3D63 8D080DF5 3B6E20C8 4C69105E D56041E4 A2677172 3C03E4D1 4B04D447 D20D85FD A50AB56B 35B5A8FA 42B2986C DBBBC9D6 ACBCF940 32D86CE3 45DF5C75 DCD60DCF ABD13D59 26D930AC 51DE003A C8D75180 BFD06116 21B4F4B5 56B3C423 CFBA9599 B8BDA50F 2802B89E 5F058808 C60CD9B2 B10BE924 2F6F7C87 58684C11 C1611DAB B6662D3D 76DC4190 01DB7106 98D220BC EFD5102A 71B18589 06B6B51F 9FBFE4A5 E8B8D433 7807C9A2 0F00F934 9609A88E E10E9818 7F6A0DBB 086D3D2D 91646C97 E6635C01 6B6B51F4 1C6C6162 856530D8 F262004E 6C0695ED 1B01A57B 8208F4C1 F50FC457 65B0D9C6 12B7E950 8BBEB8EA FCB9887C 62DD1DDF 15DA2D49 8CD37CF3 FBD44C65 4DB26158 3AB551CE A3BC0074 D4BB30E2 4ADFA541 3DD895D7 A4D1C46D D3D6F4FB 4369E96A 346ED9FC AD678846 DA60B8D0 44042D73 33031DE5 AA0A4C5F DD0D7CC9 5005713C 270241AA BE0B1010 C90C2086 5768B525 206F85B3 B966D409 CE61E49F 5EDEF90E 29D9C998 B0D09822 C7D7A8B4 59B33D17 2EB40D81 B7BD5C3B C0BA6CAD EDB88320 9ABFB3B6 03B6E20C 74B1D29A EAD54739 9DD277AF 04DB2615 73DC1683 E3630B12 94643B84 0D6D6A3E 7A6A5AA8 E40ECF0B 9309FF9D 0A00AE27 7D079EB1 F00F9344 8708A3D2 1E01F268 6906C2FE F762575D 806567CB 196C3671 6E6B06E7 FED41B76 89D32BE0 10DA7A5A 67DD4ACC F9B9DF6F 8EBEEFF9 17B7BE43 60B08ED5 D6D6A3E8 A1D1937E 38D8C2C4 4FDFF252 D1BB67F1 A6BC5767 3FB506DD 48B2364B D80D2BDA AF0A1B4C 36034AF6 41047A60 DF60EFC3 A867DF55 316E8EEF 4669BE79 CB61B38C BC66831A 256FD2A0 5268E236 CC0C7795 BB0B4703 220216B9 5505262F C5BA3BBE B2BD0B28 2BB45A92 5CB36A04 C2D7FFA7 B5D0CF31 2CD99E8B 5BDEAE1D 9B64C2B0 EC63F226 756AA39C 026D930A 9C0906A9 EB0E363F 72076785 05005713 95BF4A82 E2B87A14 7BB12BAE 0CB61B38 92D28E9B E5D5BE0D 7CDCEFB7 0BDBDF21 86D3D2D4 F1D4E242 68DDB3F8 1FDA836E 81BE16CD F6B9265B 6FB077E1 18B74777 88085AE6 FF0F6A70 66063BCA 11010B5C 8F659EFF F862AE69 616BFFD3 166CCF45 A00AE278 D70DD2EE 4E048354 3903B3C2 A7672661 D06016F7 4969474D 3E6E77DB AED16A4A D9D65ADC 40DF0B66 37D83BF0 A9BCAE53 DEBB9EC5 47B2CF7F 30B5FFE9 BDBDF21C CABAC28A 53B39330 24B4A3A6 BAD03605 CDD70693 54DE5729 23D967BF B3667A2E C4614AB8 5D681B02 2A6F2B94 B40BBE37 C30C8EA1 5A05DF1B 2D02EF8D";
-    var crc = 0;
-    var x = 0;
-    var y = 0;
-
-    crc = crc ^ (-1);
-    for( var i = 0, iTop = str.length; i < iTop; i++ ) 
-		{
-        y = ( crc ^ str.charCodeAt( i ) ) & 0xFF;
-        x = "0x" + table.substr( y * 9, 8 );
-        crc = ( crc >>> 8 ) ^ x;
-		}
-
-    return (crc ^ (-1)) >>> 0;
-	}	
-// Reverse the string before djb2 hash.	
-function djb2reverse(str)
-	{
-	s = str.split("").reverse().join("");
-	return s.hashCode();
-	}	
-function crc32reverse(str)
-	{
-	s = str.split("").reverse().join("");
-	return crc32(s);
-	}		
-// Shift the string n places before djb2 hash.	
-function djb2shift(str,i)
-	{
-	head = str.substring(0,i);
-	tail = str.substring(i);
-	return (tail+head).hashCode();
-	}
-// add salt to string before djb hash
-var salt = [];	// global variable
-function loadSalts()	// called upon page load
-	{
-	var saltArea = document.getElementById("slistid").value;
-	salt = saltArea.split("\n");
-//tester();			// uncomment to run tester() function
-	return false;	
-	}
-function djb2salt(str,i)
-	{
-	return (str+salt[i]).hashCode();
-	}
-function coding(name,L,type)
-	{
-	name = name.toUpperCase();
-	ID = -1;
-
-	switch (type)
-		{
-		case 0: // default
-				ID = Math.abs((name.hashCode())%L);
-				break;
-		case 1: // reverse
-				ID = Math.abs(djb2reverse(name)%L);            
-				break;
-		case 2: // CRC
-				ID = Math.abs(crc32(name)%L);                    
-				break;
-		case 3: // CRC reverse
-				ID = Math.abs(crc32reverse(name)%L);                    
-				break;
-		// shift in ten steps
-		case 4: case  5: case  6: case  7: case  8: 
-				ID = Math.abs(djb2shift(name, type - 3)%L);                    
-				break;
-		default: // salt based on the value as index into salt array
-				idx = type%salt.length;
-				ID = Math.abs(djb2salt(name, idx)%L);                                  
-				break;                    
-		}
-    return ID;
-    }				
-	// Function to find encoding based on encodings map and participant name
-function findEncoding(encodings, name, L)
-	{
-	// get the default (base) encoding
-	var ID = coding(name,L,0);
-	// lookup the coding type
-	var types = encodings.get(ID) ;
-	
-	for (var i = 1;i < types.length;i++)
-		{
-		var type = types[i];
-		//var code = validation[i];
-		var ID2 = coding(name,L,type);
-		//var valid = coding(name,L,type);
-		}
-	return ID;
-	}   
-function findEncoding(encodings, name, L)
-	{
-	// get the default (base) encoding
-	var ID = coding(name,L,0);
-	// lookup the coding type
-	var types = encodings.get(ID);
-
-	for (var i = 1;i < types.length;i++)
-		{
-		var type = types[i];
-		var code = validation[i];
-		var ID2 = coding(name,L,type);    
-		}
-	return  ID;
-	} 
-function determineEncodingType(name) {
-	name = name.toUpperCase();
-        var L = 5000; // Sample size
-        var soundexCode = soundex(name);
-        var hash = name.hashCode();
-        var crc32Hash = crc32(name);
-        var crc32ReverseHash = crc32reverse(name);
-        var shiftedHash = [];
-        
-        // Generate shifted hashes
-        for (var i = 4; i <= 8; i++) {
-            shiftedHash.push(djb2shift(name, i));
-        }
-
-        // Determine types based on different encoding methods
-        var types = [
-            hash % L,                    // Type 0: Hash
-            djb2reverse(name) % L,       // Type 1: Reverse hash
-            crc32Hash % L,               // Type 2: CRC32 hash
-            crc32ReverseHash % L,        // Type 3: Reverse CRC32 hash
-            shiftedHash[0] % L,          // Type 4: Shifted hash 1
-            shiftedHash[1] % L,          // Type 5: Shifted hash 2
-            shiftedHash[2] % L,          // Type 6: Shifted hash 3
-            shiftedHash[3] % L,          // Type 7: Shifted hash 4
-            shiftedHash[4] % L           // Type 8: Shifted hash 5
-        ];
-
-        // Map types to range 0-8
-        var simplifiedTypes = types.map(function(type) {
-            return type % 9; // Adjusted to range 0-8
-        });
-
-        return simplifiedTypes;
-    }
-function generateID() {
-        var L = 99999999; // (Sample size) used to set amount of digits desired in output
-        var name = document.getElementById("participantName").value.trim().toUpperCase();
-
-        // Determine encoding types
-        var encodingTypes = determineEncodingType(name);
-
-        // Choose one encoding type (for example, taking the first one)
-        var chosenEncodingType = encodingTypes[0];
-
-        // Generate ID based on chosen encoding type
-        var ID = coding(name, L, chosenEncodingType);
-        var participantID = ID.toString().padStart(8, '0'); // Ensure 4-digit ID
-
-        // Display participant ID and encoding type
-        document.getElementById("result").innerText = participantID;
-        // document.getElementById("encodingType").innerText = "Encoding Type: " + chosenEncodingType;
-    }
-
-function handleKeyPress(event) {
-        if (event.keyCode === 13) {
-            event.preventDefault(); // Prevent form submission
-            generateID(); // Call generateID function on Enter key press
-        }
-    }
-
-	    
-	    // overall changes made:
-// removed following functions: findFreeCodingType, getValidationKey, addPerson, encodePhonetic, lockManualInput,lockAutoInput, isLetter, checkValidName, add, lookup, tester
-// removed validation sections from all other functions being used 
-// created generate id function and set sample size (L = 5000), & (L = 99999999) to set desired amount of digits in ID (8)
-// created determineEncodingType function to check that different encoding types were being used. can be shown by removing // from line 282, document.getElementById, under generateID function
-// added handleKeyPress function to improve user freindliness 
-// entire script was revised to remove the usage of capitalization in the Participant's names, each function now includes a "toUpperCase" portion to capitalize all letters 
-
-
-	    
-    </script>
 </head>
 <body>
     <div class="container">
-        <h2>Participant ID Generator</h2>
-        <p>Please enter the first and second letter of your first name and last name (e.g. Chris Castille = "chca") followed by the last four digits of your cell phone number (e.g., "0664"):</p>
-	    <p>(e.g., "chca0664") </p>
-        <form onsubmit="event.preventDefault(); generateID();">
-            <input type="text" id="participantName" placeholder="chca0664" onkeypress="handleKeyPress(event)">
-            <button type="submit">Generate ID</button>
-        </form>
-        <p>Generated Participant ID:</p>
-        <p id="result"></p>
-        <p id="encodingType"></p>
+        <h1>🔑 Generate Your Candidate ID</h1>
+        
+        <div class="info-box">
+            <strong>Privacy & Data Control:</strong> Your name is used only to generate a unique, consistent Candidate ID. Your name is <strong>NOT stored or recorded</strong> anywhere—only the generated ID is saved with your responses.
+            <br><br>
+            <strong>Why This Matters:</strong> This system gives you control over your data while maintaining anonymity. If you ever want your data removed from the study, you can request removal using your Candidate ID. The same name will always generate the same ID, so you can save it for future reference.
+        </div>
+
+        <div class="form-group">
+            <label for="studentName">Enter Your Name:</label>
+            <input type="text" id="studentName" placeholder="First and Last Name" autocomplete="off">
+        </div>
+
+        <div id="candidateIdDisplay" class="candidate-id-display" style="display: none;">
+            <div class="label">Your Candidate ID:</div>
+            <div class="id" id="candidateIdValue" onclick="copyToClipboard()"></div>
+            <button class="btn-copy" onclick="copyToClipboard()">📋 Copy ID</button>
+            <div class="success-message" id="successMessage">✅ Copied to clipboard!</div>
+            <div style="margin-top: 12px; font-size: 0.85em; color: #7f8c8d;">
+                💾 <strong>Save this ID</strong> if you want to request data removal later. Your name is not stored—only this ID links to your responses.
+            </div>
+        </div>
+
+        <div class="warning" id="warningMessage" style="display: none;">
+            ⚠️ Please enter your name to generate a Candidate ID.
+        </div>
     </div>
-    <div>
-        <p>We do not store your unique ID (e.g., chca0664). Rather, the above ID generator uses this information to give you a unique code that only you can access. This gives you ownership over your data. The logic behind the calculations can be seen in the following article, <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0260569">"CANDIDATE: A tool for generating anonymous participant-linking IDs in multi-session studies"</a>, as well as the original code used to compute your ID.</p>
-    </div>
+
+    <script>
+        // CANDIDATE-ID Generator (adapted from CANDIDATE tool)
+        // Based on: https://github.com/chriscastille6/CANDIDATE-ID-GENERATOR
+        // Original: https://github.com/frode-sandnes/CANDIDATE
+        
+        function generateCandidateId(name) {
+            if (!name || name.trim() === '') {
+                return null;
+            }
+            
+            // Normalize the name: trim, lowercase, remove extra spaces
+            const normalized = name.trim().toLowerCase().replace(/\s+/g, ' ');
+            
+            // Simple hash function to create consistent ID
+            let hash = 0;
+            for (let i = 0; i < normalized.length; i++) {
+                const char = normalized.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            
+            // Convert to positive number and create alphanumeric ID
+            const absHash = Math.abs(hash);
+            const base36 = absHash.toString(36).toUpperCase();
+            
+            // Pad to ensure consistent length (8 characters)
+            const padded = base36.padStart(8, '0');
+            
+            // Format as CANDIDATE-XXXX-XXXX
+            const formatted = `CANDIDATE-${padded.substring(0, 4)}-${padded.substring(4, 8)}`;
+            
+            return formatted;
+        }
+
+        function copyToClipboard() {
+            const candidateId = candidateIdValue.textContent;
+            if (!candidateId) return;
+
+            // Use modern Clipboard API if available
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(candidateId).then(function() {
+                    showSuccessMessage();
+                }).catch(function(err) {
+                    console.error('Failed to copy:', err);
+                    fallbackCopy(candidateId);
+                });
+            } else {
+                fallbackCopy(candidateId);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showSuccessMessage();
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showSuccessMessage() {
+            const successMsg = document.getElementById('successMessage');
+            const idElement = document.getElementById('candidateIdValue');
+            successMsg.style.display = 'block';
+            idElement.classList.add('copied');
+            setTimeout(function() {
+                successMsg.style.display = 'none';
+                idElement.classList.remove('copied');
+            }, 2000);
+        }
+
+        const nameInput = document.getElementById('studentName');
+        const candidateIdDisplay = document.getElementById('candidateIdDisplay');
+        const candidateIdValue = document.getElementById('candidateIdValue');
+        const warningMessage = document.getElementById('warningMessage');
+
+        nameInput.addEventListener('input', function() {
+            const name = this.value.trim();
+            const candidateId = generateCandidateId(name);
+            
+            if (candidateId) {
+                candidateIdValue.textContent = candidateId;
+                candidateIdDisplay.style.display = 'block';
+                warningMessage.style.display = 'none';
+                
+                // Store in localStorage for persistence
+                localStorage.setItem('candidate_id', candidateId);
+                localStorage.setItem('candidate_name_hash', name.toLowerCase().trim());
+                
+                // Debug logging
+                console.log('✅ Candidate ID generated:', candidateId);
+            } else {
+                candidateIdDisplay.style.display = 'none';
+            }
+        });
+
+        // Check if candidate ID already exists on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const existingId = localStorage.getItem('candidate_id');
+            if (existingId) {
+                candidateIdValue.textContent = existingId;
+                candidateIdDisplay.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
-
-
